@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Bot", "src\Radzinsky.Bot\Radzinsky.Bot.csproj", "{5F684811-F2F0-405F-B577-C1820D7B7B6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79DD88CD-B7C6-46C8-8515-103A7E50EAE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Application", "src\Radzinsky.Application\Radzinsky.Application.csproj", "{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
+		{5F684811-F2F0-405F-B577-C1820D7B7B6A} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
+	EndGlobalSection
+EndGlobal
