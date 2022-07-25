@@ -24,10 +24,14 @@
         <None Update="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="resources.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Radzinsky.Application\Radzinsky.Application.csproj"/>
+        <ProjectReference Include="..\Radzinsky.Infrastructure\Radzinsky.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

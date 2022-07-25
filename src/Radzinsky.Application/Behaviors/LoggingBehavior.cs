@@ -9,16 +9,9 @@ internal class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken,
         RequestHandlerDelegate<TResponse> next)
     {
-        TResponse? response = default;
-        try
-        {
-            Log.Debug("Handling {@0}", request);
-            response = await next();
-            return response;
-        }
-        finally
-        {
-            Log.Debug("{0} handled with return of {@1}", request, response);
-        }
+        Log.Information("Handling {0}", request);
+        var response = await next();
+        Log.Information("{0} handled with return of {1}", request, response);
+        return response;
     }
 }
