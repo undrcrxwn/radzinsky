@@ -8,10 +8,6 @@ using Serilog;
 
 namespace Radzinsky.Bot;
 
-public class UpdatePipelineBuilder
-{
-}
-
 public static class Program
 {
     private const string AppSettingsPath = "appsettings.json";
