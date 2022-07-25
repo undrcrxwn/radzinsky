@@ -4,7 +4,7 @@ namespace Radzinsky.Infrastructure.Services;
 
 public class DamerauLevenshteinSimilarityMeasurer : IStringDistanceMeasurer
 {
-    public int MeasureDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    public int MeasureDistance(string a, string b)
     {
         var bounds = new {Height = a.Length + 1, Width = b.Length + 1};
 

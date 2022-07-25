@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IImperativeCallMapper, ImperativeCallMapper>()
             .AddSingleton<IImperativeArgumentParser, ImperativeArgumentParser>()
             .AddSingleton<UpdateReceiver>()
+            .AddSingleton<IWebSearchService, GoogleSearchService>()
             .AddResources();
     }
 

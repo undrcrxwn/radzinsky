@@ -13,9 +13,9 @@ public class StringSimilarityMeasurer : IStringSimilarityMeasurer
         _distanceMeasurer = distanceMeasurer;
     }
 
-    public StringSimilarity MeasureSimilarity(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    public StringSimilarity MeasureSimilarity(string a, string b)
     {
-        var distance = _distanceMeasurer.MeasureDistance(a, b);
+        var distance = _distanceMeasurer.MeasureDistance(a.ToLower(), b.ToLower());
         var distancePerPart = distance / (double) StringPartLength;
         return distancePerPart switch
         {

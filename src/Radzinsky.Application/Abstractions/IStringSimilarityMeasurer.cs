@@ -4,5 +4,5 @@ namespace Radzinsky.Application.Abstractions;
 
 public interface IStringSimilarityMeasurer
 {
-    public StringSimilarity MeasureSimilarity(ReadOnlySpan<char> a, ReadOnlySpan<char> b);
+    public StringSimilarity MeasureSimilarity(string a, string b);
 }

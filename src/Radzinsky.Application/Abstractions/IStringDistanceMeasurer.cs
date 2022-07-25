@@ -2,5 +2,5 @@
 
 public interface IStringDistanceMeasurer
 {
-    public int MeasureDistance(ReadOnlySpan<char> a, ReadOnlySpan<char> b);
+    public int MeasureDistance(string a, string b);
 }

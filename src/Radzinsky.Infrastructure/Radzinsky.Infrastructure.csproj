@@ -11,4 +11,8 @@
         <ProjectReference Include="..\Radzinsky.Application\Radzinsky.Application.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Google.Apis.CustomSearchAPI.v1" Version="1.57.0.2455"/>
+    </ItemGroup>
+
 </Project>

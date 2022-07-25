@@ -64,8 +64,8 @@ public class LinguisticParser : ILinguisticParser
             .Where(@case => @case.Length <= text.Length)
             .Select(candidate =>
             {
-                var beginning = text[..candidate.Length];
-                var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, beginning.Span);
+                var beginning = text[..candidate.Length].ToString();
+                var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, beginning);
                 return (candidate, Similarity: candidateSimilarity, beginning.Length);
             })
             .OrderByDescending(x => x.Similarity)
