@@ -7,7 +7,7 @@ COPY ["src/Radzinsky.Bot/Radzinsky.Bot.csproj", "Radzinsky.Bot/"]
 COPY ["src/Radzinsky.Application/Radzinsky.Application.csproj", "Radzinsky.Application/"]
 COPY ["src/Radzinsky.Domain/Radzinsky.Domain.csproj", "Radzinsky.Domain/"]
 COPY ["src/Radzinsky.Infrastructure/Radzinsky.Infrastructure.csproj", "Radzinsky.Infrastructure/"]
-RUN dotnet restore "src/Radzinsky.Bot/Radzinsky.Bot.csproj"
+RUN dotnet restore "Radzinsky.Bot/Radzinsky.Bot.csproj"
 COPY . .
 WORKDIR "/src/Radzinsky.Bot"
 RUN dotnet build "Radzinsky.Bot.csproj" -c Release -o /app/build
