@@ -10,7 +10,7 @@ namespace Radzinsky.Bot;
 
 public static class Program
 {
-    private const string AppSettingsPath = "appsettings.json";
+    private const string ConfigurationFilePath = "appsettings.json";
 
     public static void Main(string[] args)
     {
@@ -33,7 +33,7 @@ public static class Program
 
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile(AppSettingsPath)
+            .AddJsonFile(ConfigurationFilePath)
             .Build();
 
         Log.Logger = new LoggerConfiguration()
