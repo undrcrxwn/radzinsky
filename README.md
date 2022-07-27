@@ -1,4 +1,4 @@
-# Radzinsky [![](https://www.codefactor.io/repository/github/undrcrxwn/radzinsky/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/radzinsky/overview/master) [![](https://img.shields.io/badge/telegram-@radzinsky__bot-blue)](https://t.me/radzinsky_bot)
+# Radzinsky ![](https://github.com/undrcrxwn/radzinsky/actions/workflows/dotnet.yml/badge.svg) [![](https://www.codefactor.io/repository/github/undrcrxwn/radzinsky/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/radzinsky/overview/master) [![](https://img.shields.io/badge/telegram-@radzinsky__bot-blue)](https://t.me/radzinsky_bot)
 Yet another Telegram bot made for fun and profit.
 
 ### Implemented features
