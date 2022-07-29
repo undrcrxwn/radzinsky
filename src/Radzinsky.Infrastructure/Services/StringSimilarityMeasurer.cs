@@ -20,7 +20,7 @@ public class StringSimilarityMeasurer : IStringSimilarityMeasurer
         return distancePerPart switch
         {
             0 => StringSimilarity.Equal,
-            < 3.0 => StringSimilarity.High,
+            < 2.0 => StringSimilarity.High,
             < 3.0 => StringSimilarity.Medium,
             _ => StringSimilarity.Low
         };
