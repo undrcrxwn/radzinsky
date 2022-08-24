@@ -5,7 +5,6 @@ namespace Radzinsky.Bot.Services;
 
 public class StringSimilarityMeasurer : IStringSimilarityMeasurer
 {
-    private const int StringPartLength = 3;
     private readonly IStringDistanceMeasurer _distanceMeasurer;
 
     public StringSimilarityMeasurer(IStringDistanceMeasurer distanceMeasurer)
@@ -16,12 +15,14 @@ public class StringSimilarityMeasurer : IStringSimilarityMeasurer
     public StringSimilarity MeasureSimilarity(string a, string b)
     {
         var distance = _distanceMeasurer.MeasureDistance(a.ToLower(), b.ToLower());
-        var distancePerPart = distance / (double) StringPartLength;
-        return distancePerPart switch
+        var averageInputLength = (a.Length + b.Length) / 2.0;
+        var distancePerCharacter = distance / averageInputLength;
+
+        return distancePerCharacter switch
         {
             0 => StringSimilarity.Equal,
-            < 1.0 => StringSimilarity.High,
-            < 2.0 => StringSimilarity.Medium,
+            < 0.4 => StringSimilarity.High,
+            < 0.7 => StringSimilarity.Medium,
             _ => StringSimilarity.Low
         };
     }

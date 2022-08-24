@@ -3,5 +3,6 @@
 public enum ImperativeType
 {
     Greeting,
-    Search
+    Search,
+    Analysis
 }
