@@ -9,6 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Google.Apis.CustomSearchAPI.v1" Version="1.57.0.2455"/>
+        <PackageReference Include="MediatR" Version="10.0.1"/>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0-preview.6.22324.4"/>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0-preview.6.22324.4"/>
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0-preview.6.22324.4"/>
@@ -28,11 +31,6 @@
         <None Update="resources.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Radzinsky.Application\Radzinsky.Application.csproj"/>
-        <ProjectReference Include="..\Radzinsky.Infrastructure\Radzinsky.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

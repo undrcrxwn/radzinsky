@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Radzinsky.Application;
-using Radzinsky.Infrastructure;
-using Radzinsky.Infrastructure.Services;
+using Radzinsky.Bot.Extensions;
+using Radzinsky.Bot.Services;
 using Serilog;
 
 namespace Radzinsky.Bot;
@@ -50,9 +49,7 @@ public static class Program
     {
         return Host.CreateDefaultBuilder(args)
             .UseSerilog()
-            .ConfigureServices(services => services
-                .AddApplicationServices()
-                .AddInfrastructureServices()
-                .AddTelegramBot());
+            .ConfigureServices(services =>
+                services.AddServices());
     }
 }

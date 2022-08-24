@@ -4,12 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Bot", "src\Radzin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79DD88CD-B7C6-46C8-8515-103A7E50EAE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Application", "src\Radzinsky.Application\Radzinsky.Application.csproj", "{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Infrastructure", "src\Radzinsky.Infrastructure\Radzinsky.Infrastructure.csproj", "{49C94387-CDAD-4263-81A3-7C50F28649BB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radzinsky.Domain", "src\Radzinsky.Domain\Radzinsky.Domain.csproj", "{237107ED-20C8-473E-AC81-EE3E9E73CDA8}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,23 +14,8 @@ Global
 		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F684811-F2F0-405F-B577-C1820D7B7B6A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{49C94387-CDAD-4263-81A3-7C50F28649BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{49C94387-CDAD-4263-81A3-7C50F28649BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{49C94387-CDAD-4263-81A3-7C50F28649BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{49C94387-CDAD-4263-81A3-7C50F28649BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{237107ED-20C8-473E-AC81-EE3E9E73CDA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{237107ED-20C8-473E-AC81-EE3E9E73CDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{237107ED-20C8-473E-AC81-EE3E9E73CDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{237107ED-20C8-473E-AC81-EE3E9E73CDA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{74B3D50F-8894-4D5F-B1E0-7CE53403FC6A} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
 		{5F684811-F2F0-405F-B577-C1820D7B7B6A} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
-		{49C94387-CDAD-4263-81A3-7C50F28649BB} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
-		{237107ED-20C8-473E-AC81-EE3E9E73CDA8} = {79DD88CD-B7C6-46C8-8515-103A7E50EAE1}
 	EndGlobalSection
 EndGlobal
