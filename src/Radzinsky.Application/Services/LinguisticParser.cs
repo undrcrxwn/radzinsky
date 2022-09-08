@@ -53,7 +53,7 @@ public class LinguisticParser : ILinguisticParser
             .ThenByDescending(x => x.Length)
             .First();
 
-        return bestMatch.Similarity >= StringSimilarity.Medium
+        return bestMatch.Similarity >= StringSimilarity.High
             ? new CaseParsingResult(text.AsMemory()[..bestMatch.Length], bestMatch.Candidate)
             : null;
     }
