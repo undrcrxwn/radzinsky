@@ -18,7 +18,8 @@ public static class ServiceCollectionExtensions
         .AddCommandResources()
         .AddCommands()
         .AddLinguisticParsing()
-        .AddSingleton<IUpdateHandler, UpdateHandler>();
+        .AddSingleton<IUpdateHandler, UpdateHandler>()
+        .AddSingleton<IWebSearchService, GoogleSearchService>();
 
     private static IServiceCollection AddCommands(this IServiceCollection services)
     {

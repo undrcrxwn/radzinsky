@@ -11,6 +11,6 @@ public class CommandContext
     public string Payload;
     public CommandResources Resources;
 
-    public async Task ReplyAsync(string text, ParseMode? parseMode = null) =>
-        await Bot.SendTextMessageAsync(Message.Chat.Id, text, parseMode);
+    public async Task ReplyAsync(string text, ParseMode? parseMode = null, bool? disableWebPagePreview = null) =>
+        await Bot.SendTextMessageAsync(Message.Chat.Id, text, parseMode, disableWebPagePreview: disableWebPagePreview);
 }

@@ -48,6 +48,10 @@ public class UpdateHandler : IUpdateHandler
         catch (Exception e)
         {
             Log.Error(e, "Unhandled exception raised while handling update: {@0}", update);
+
+#if DEBUG
+            throw;
+#endif
         }
     }
 
@@ -59,41 +63,47 @@ public class UpdateHandler : IUpdateHandler
             Bot = _bot,
             Message = message
         };
-        
+
         // Parse mention
         var mention = _parser.TryParseMentionFromBeginning(message.Text);
-        var rest = message.Text[mention.Segment.Length..];
+        if (mention is null)
+        {
+            Log.Information("No mention found in message");
+            return;
+        }
+        
+        var rest = message.Text[mention.Segment.Length..].TrimStart();
         if (string.IsNullOrWhiteSpace(rest))
         {
             Log.Information("Single mention message detected");
-            context.Resources = _commands.FirstOrDefault(x => x.CommandName == nameof(MentionCommand))
-                ?? new CommandResources { CommandName = nameof(MentionCommand) };
+            context.Resources = _commands.First(x => x.CommandTypeName == typeof(MentionCommand).FullName);
             await new MentionCommand().ExecuteAsync(context);
             return;
         }
 
         // Parse command alias
         var alias = _parser.TryParseCommandAliasFromBeginning(rest);
-        context.Payload = rest[mention.Segment.Length..];
         if (alias is null)
         {
             Log.Information("No command alias found in message");
+            context.Resources = _commands.First(x => x.CommandTypeName == typeof(MisunderstandingCommand).FullName);
+            await new MisunderstandingCommand().ExecuteAsync(context);
             return;
         }
+        
+        context.Payload = rest[alias.Segment.Length..].TrimStart();
 
         // Find command
-        context.Resources =
-            _commands.FirstOrDefault(x => x.Aliases.Contains(alias.Segment.ToString()))
-            ?? new CommandResources { CommandName = nameof(MentionCommand) };
-        var command = GetCommandInstanceByName(context.Resources.CommandName);
+        context.Resources = _commands.First(x => x.Aliases.Contains(alias.Case));
+        var command = GetCommandInstanceByName(context.Resources.CommandTypeName);
 
         // Execute command
         await command.ExecuteAsync(context);
     }
 
-    private ICommand GetCommandInstanceByName(string commandName)
+    private ICommand GetCommandInstanceByName(string commandTypeName)
     {
-        var commandType = Assembly.GetExecutingAssembly().GetType(commandName);
+        var commandType = Type.GetType(commandTypeName);
         using var scope = _scopeFactory.CreateScope();
         return (ICommand)scope.ServiceProvider.GetRequiredService(commandType);
     }
