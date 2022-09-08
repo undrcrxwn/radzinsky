@@ -31,16 +31,13 @@ public class LinguisticParser : ILinguisticParser
 
     public CaseParsingResult? TryParseCaseFromBeginning(string text, IEnumerable<string> cases)
     {
-        var candidates = cases
-            .Where(@case => @case.Length <= text.Length);
-
-        if (candidates.Count() == 0)
+        if (cases.Count() == 0)
             return null;
         
-        var bestMatch = candidates
+        var bestMatch = cases
             .Select(candidate =>
             {
-                var beginning = text[..candidate.Length].ToString();
+                var beginning = text.Substring(0, Math.Min(text.Length, candidate.Length));
                 var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, beginning);
                 
                 return new
@@ -54,31 +51,7 @@ public class LinguisticParser : ILinguisticParser
             .ThenByDescending(x => x.Length)
             .First();
 
-        return bestMatch.Similarity >= StringSimilarity.High
-            ? new CaseParsingResult(text.AsMemory()[..bestMatch.Length], bestMatch.Candidate)
-            : null;
-    }
-    
-    public CaseParsingResult? TryParseCaseFromBeginning111(string text, IEnumerable<string> cases)
-    {
-        var bestMatch = cases
-            .Where(@case => @case.Length <= text.Length)
-            .Select(candidate =>
-            {
-                var beginning = text[..candidate.Length].ToString();
-                var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, beginning);
-                return new
-                {
-                    Candidate = candidate,
-                    Similarity = candidateSimilarity,
-                    Length = beginning.Length
-                };
-            })
-            .OrderByDescending(x => x.Similarity)
-            .ThenByDescending(x => x.Length)
-            .First();
-
-        return bestMatch.Similarity >= StringSimilarity.High
+        return bestMatch.Similarity >= StringSimilarity.Low
             ? new CaseParsingResult(text.AsMemory()[..bestMatch.Length], bestMatch.Candidate)
             : null;
     }
