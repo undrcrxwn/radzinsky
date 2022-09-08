@@ -37,21 +37,23 @@ public class LinguisticParser : ILinguisticParser
         var bestMatch = cases
             .Select(candidate =>
             {
-                var beginning = text.Substring(0, Math.Min(text.Length, candidate.Length));
-                var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, beginning);
+                var wordCount = candidate.Split().Length;
+                var takenWords = text.Split().Take(wordCount);
+                var input = string.Join(' ', takenWords);
+                var candidateSimilarity = _similarityMeasurer.MeasureSimilarity(candidate, input);
                 
                 return new
                 {
                     Candidate = candidate,
                     Similarity = candidateSimilarity,
-                    Length = beginning.Length
+                    Length = input.Length
                 };
             })
             .OrderByDescending(x => x.Similarity)
             .ThenByDescending(x => x.Length)
             .First();
 
-        return bestMatch.Similarity >= StringSimilarity.Low
+        return bestMatch.Similarity >= StringSimilarity.Medium
             ? new CaseParsingResult(text.AsMemory()[..bestMatch.Length], bestMatch.Candidate)
             : null;
     }
