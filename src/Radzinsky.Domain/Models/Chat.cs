@@ -1,6 +1,6 @@
 ﻿namespace Radzinsky.Domain.Models;
 
-public class User
+public class Chat
 {
     public long Id { get; set; }
 }

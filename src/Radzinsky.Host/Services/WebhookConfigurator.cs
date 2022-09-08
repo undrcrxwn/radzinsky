@@ -3,13 +3,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Host.Services;
 
-public class ConfigureWebhook : IHostedService
+public class WebhookConfigurator : IHostedService
 {
-    private readonly ILogger<ConfigureWebhook> _logger;
+    private readonly ILogger<WebhookConfigurator> _logger;
     private readonly IServiceProvider _services;
     private readonly BotConfiguration _botConfig;
 
-    public ConfigureWebhook(ILogger<ConfigureWebhook> logger,
+    public WebhookConfigurator(ILogger<WebhookConfigurator> logger,
         IServiceProvider serviceProvider,
         IConfiguration configuration)
     {

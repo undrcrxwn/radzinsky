@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     private const string CommandResourcesPath = "Resources/commands.json";
     private const string SelfResourcesPath = "Resources/self.json";
 
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services) => services
+    public static IServiceCollection AddApplication(this IServiceCollection services) => services
         .AddSelfResources()
         .AddCommandResources()
         .AddCommands()

@@ -8,6 +8,10 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta2" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
@@ -17,6 +21,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Radzinsky.Application\Radzinsky.Application.csproj" />
+      <ProjectReference Include="..\Radzinsky.Persistence\Radzinsky.Persistence.csproj" />
     </ItemGroup>
 
 </Project>

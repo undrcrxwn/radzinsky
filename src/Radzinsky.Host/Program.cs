@@ -1,6 +1,7 @@
 using Radzinsky.Application.Extensions;
 using Radzinsky.Host;
 using Radzinsky.Host.Services;
+using Radzinsky.Persistence.Extensions;
 using Serilog;
 using Telegram.Bot;
 
@@ -13,13 +14,14 @@ Log.Logger = new LoggerConfiguration()
 
 var botConfig = builder.Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
 
-builder.Services.AddHostedService<ConfigureWebhook>();
+builder.Services.AddHostedService<WebhookConfigurator>();
 
 builder.Services.AddHttpClient("tgwebhook")
     .AddTypedClient<ITelegramBotClient>(httpClient => new TelegramBotClient(botConfig.BotToken, httpClient));
 
 builder.Services
-    .AddApplicationServices()
+    .AddApplication()
+    .AddPersistence(builder.Configuration)
     .AddControllers()
     .AddNewtonsoftJson();
 
