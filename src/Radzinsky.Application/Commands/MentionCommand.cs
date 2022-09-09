@@ -6,6 +6,6 @@ namespace Radzinsky.Application.Commands;
 
 public class MentionCommand : ICommand
 {
-    public async Task ExecuteAsync(CommandContext context) =>
+    public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken) =>
         await context.ReplyAsync(context.Resources.Variants["AtYourService"].PickRandom());
 }

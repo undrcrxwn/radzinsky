@@ -15,7 +15,7 @@ public class AliasesCommand : ICommand
         _parser = parser;
     }
 
-    public async Task ExecuteAsync(CommandContext context)
+    public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
         if (alias is null)

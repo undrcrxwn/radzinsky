@@ -13,10 +13,11 @@ public class WebSearchCommand : ICommand
     public WebSearchCommand(IWebSearchService webSearch) =>
         _webSearch = webSearch;
     
-    public async Task ExecuteAsync(CommandContext context)
+    public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         // Perform web search
         var (results, url) = await _webSearch.SearchAsync(context.Payload);
+        cancellationToken.ThrowIfCancellationRequested();
         
         // Append results
         var stringBuilder = new StringBuilder();
@@ -44,6 +45,7 @@ public class WebSearchCommand : ICommand
         var text = stringBuilder.ToString();
 
         // Send reply
+        cancellationToken.ThrowIfCancellationRequested();
         await context.ReplyAsync(text, ParseMode.Html, true);
     }
 }

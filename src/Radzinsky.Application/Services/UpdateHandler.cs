@@ -58,6 +58,7 @@ public class UpdateHandler : IUpdateHandler
     private async Task HandleTextMessageAsync(Message message)
     {
         // Create command context
+        var cts = new CancellationTokenSource();
         var context = new CommandContext
         {
             Bot = _bot,
@@ -77,7 +78,7 @@ public class UpdateHandler : IUpdateHandler
         {
             Log.Information("Single mention message detected");
             context.Resources = _commands.First(x => x.CommandTypeName == typeof(MentionCommand).FullName);
-            await new MentionCommand().ExecuteAsync(context);
+            await new MentionCommand().ExecuteAsync(context, cts.Token);
             return;
         }
 
@@ -87,7 +88,7 @@ public class UpdateHandler : IUpdateHandler
         {
             Log.Information("No command alias found in message");
             context.Resources = _commands.First(x => x.CommandTypeName == typeof(MisunderstandingCommand).FullName);
-            await new MisunderstandingCommand().ExecuteAsync(context);
+            await new MisunderstandingCommand().ExecuteAsync(context, cts.Token);
             return;
         }
         
@@ -99,7 +100,7 @@ public class UpdateHandler : IUpdateHandler
         var command = GetCommandInstanceByName(context.Resources.CommandTypeName, scope);
 
         // Execute command
-        await command.ExecuteAsync(context);
+        await command.ExecuteAsync(context, cts.Token);
     }
 
     private ICommand GetCommandInstanceByName(string commandTypeName, IServiceScope scope)
