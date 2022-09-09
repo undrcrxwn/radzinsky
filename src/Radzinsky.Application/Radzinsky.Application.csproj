@@ -24,4 +24,8 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Radzinsky.Persistence\Radzinsky.Persistence.csproj" />
+    </ItemGroup>
+
 </Project>

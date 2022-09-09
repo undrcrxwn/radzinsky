@@ -28,7 +28,7 @@ public static class ServiceCollectionExtensions
 
         foreach (var commandType in commandTypes)
         {
-            Log.Information("Registering command of type {0}", commandType.Name);
+            Log.Information("Registering command of type {0}", commandType.FullName);
             services.AddScoped(commandType);
         }
 

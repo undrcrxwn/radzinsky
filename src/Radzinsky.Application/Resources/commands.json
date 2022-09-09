@@ -19,6 +19,12 @@
     }
   },
   {
+    "CommandTypeName": "Radzinsky.Application.Commands.StatusCommand",
+    "Aliases": [
+      "статус"
+    ]
+  },
+  {
     "CommandTypeName": "Radzinsky.Application.Commands.MisunderstandingCommand",
     "Variants": {
       "CannotUnderstandYou": [

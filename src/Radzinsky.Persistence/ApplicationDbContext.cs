@@ -9,5 +9,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<Chat> Chats { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
+        : base(options) => Database.EnsureCreated();
 }
