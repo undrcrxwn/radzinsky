@@ -3,7 +3,7 @@
 public static class TimeSpanExtensions
 {
     public static string ToShortString(this TimeSpan span) =>
-        string.Format("{0} {1} {2} {3}",
+        string.Join(' ', string.Format("{0} {1} {2} {3}",
             span.Days > 0
                 ? $"{span.Days.ToString()}д"
                 : string.Empty,
@@ -15,5 +15,6 @@ public static class TimeSpanExtensions
                 : string.Empty,
             span.Seconds > 0 || span.TotalSeconds == 0
                 ? $"{span.Seconds.ToString()}с"
-                : string.Empty).Trim();
+                : string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries));
 }
