@@ -10,7 +10,7 @@ public class WebhookController : Controller
     private static readonly TimeSpan MaxUpdateTimeout = TimeSpan.FromSeconds(5);
     
     public async Task<IActionResult> Post(
-        [FromServices] IUpdateHandler updateReceiver,
+        [FromServices] IUpdateHandler updateHandler,
         [FromBody] Update update)
     {
         if (update.Message is null)
@@ -23,7 +23,7 @@ public class WebhookController : Controller
             update.Message.From, update.Message.Chat.Username, update.Message.Chat.Id);
 
         var cts = new CancellationTokenSource();
-        await updateReceiver.HandleAsync(update, cts.Token);
+        await updateHandler.HandleAsync(update, cts.Token);
         cts.Token.ThrowIfCancellationRequested();
         
         return Ok();

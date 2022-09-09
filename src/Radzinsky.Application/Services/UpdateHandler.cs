@@ -95,16 +95,16 @@ public class UpdateHandler : IUpdateHandler
 
         // Find command
         context.Resources = _commands.First(x => x.Aliases.Contains(alias.Case));
-        var command = GetCommandInstanceByName(context.Resources.CommandTypeName);
+        using var scope = _scopeFactory.CreateScope();
+        var command = GetCommandInstanceByName(context.Resources.CommandTypeName, scope);
 
         // Execute command
         await command.ExecuteAsync(context);
     }
 
-    private ICommand GetCommandInstanceByName(string commandTypeName)
+    private ICommand GetCommandInstanceByName(string commandTypeName, IServiceScope scope)
     {
         var commandType = Type.GetType(commandTypeName);
-        using var scope = _scopeFactory.CreateScope();
         return (ICommand)scope.ServiceProvider.GetRequiredService(commandType);
     }
 }
