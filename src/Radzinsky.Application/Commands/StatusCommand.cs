@@ -19,20 +19,20 @@ public class StatusCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        var responseBuilder = new StringBuilder();
+        var response = new StringBuilder();
 
-        responseBuilder.Append("UTC: ");
-        responseBuilder.AppendLine(DateTime.UtcNow.ToString());
+        response.Append("UTC: ");
+        response.AppendLine(DateTime.UtcNow.ToString());
         
-        responseBuilder.Append("Аптайм: ");
-        responseBuilder.AppendLine(_runtimeInfo.GetUptime().ToShortString());
-
-        responseBuilder.Append("Пользователей: ");
-        responseBuilder.AppendLine(_dbContext.Users.Count().ToString());
-
-        responseBuilder.Append("Чатов: ");
-        responseBuilder.AppendLine(_dbContext.Chats.Count().ToString());
+        response.Append("Аптайм: ");
+        response.AppendLine(_runtimeInfo.GetUptime().ToShortString());
         
-        await context.ReplyAsync(responseBuilder.ToString());
+        response.Append("Пользователей: ");
+        response.AppendLine(_dbContext.Users.Count().ToString());
+
+        response.Append("Чатов: ");
+        response.AppendLine(_dbContext.Chats.Count().ToString());
+        
+        await context.ReplyAsync(response.ToString());
     }
 }
