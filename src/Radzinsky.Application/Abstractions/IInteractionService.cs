@@ -4,6 +4,8 @@ namespace Radzinsky.Application.Abstractions;
 
 public interface IInteractionService
 {
-    public Checkpoint IssueCheckpoint(string name, string commandTypeName, long userId);
+    public MentionCheckpoint IssueMentionCheckpoint(string name, long userId);
+    public CommandCheckpoint IssueCommandCheckpoint(string name, string commandTypeName, long userId);
     public Checkpoint? GetCurrentCheckpoint(long userId);
+    public void ResetCheckpoint(long userId);
 }

@@ -15,12 +15,15 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApplication(this IServiceCollection services) => services
         .AddSelfResources()
+        .AddMemoryCache()
         .AddCommandResources()
         .AddCommands()
         .AddLinguisticParsing()
         .AddSingleton<IUpdateHandler, UpdateHandler>()
         .AddSingleton<IWebSearchService, GoogleSearchService>()
         .AddSingleton<IRuntimeInfoService, RuntimeInfoService>()
+        .AddSingleton<IInteractionService, InteractionService>()
+        .AddSingleton<ICommandsService, CommandsService>()
         .AddScoped<CommandContext>();
 
     private static IServiceCollection AddCommands(this IServiceCollection services)

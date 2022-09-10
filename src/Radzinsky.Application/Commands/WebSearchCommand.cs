@@ -19,7 +19,7 @@ public class WebSearchCommand : ICommand
         if (string.IsNullOrWhiteSpace(context.Payload))
         {
             await context.ReplyAsync(context.Resources.Variants["SearchWhat"].PickRandom());
-            context.SetCheckpoint("SearchWhat");
+            context.SetCommandCheckpoint("SearchWhat");
         }
 
         // Perform web search

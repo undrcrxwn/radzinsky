@@ -14,20 +14,17 @@ public class UpdateHandler : IUpdateHandler
     private readonly ILinguisticParser _parser;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IInteractionService _interaction;
-    private readonly ApplicationDbContext _dbContext;
 
     public UpdateHandler(
         ICommandsService commands,
         ILinguisticParser parser,
         IServiceScopeFactory scopeFactory,
-        IInteractionService interaction,
-        ApplicationDbContext dbContext)
+        IInteractionService interaction)
     {
         _commands = commands;
         _parser = parser;
         _scopeFactory = scopeFactory;
         _interaction = interaction;
-        _dbContext = dbContext;
     }
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken)
@@ -62,40 +59,52 @@ public class UpdateHandler : IUpdateHandler
         // Create command context
         using var scope = _scopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<CommandContext>();
-        await FillContextAsync(context, message);
-        
-        // Execute command
+        await FillContextAsync(context, message, scope);
+
+        // Execute command if possible
+        if (context.Resources is null)
+            return;
         var command = _commands.GetCommandInstance(scope, context.Resources.CommandTypeName);
         await command.ExecuteAsync(context, new CancellationTokenSource().Token);
     }
 
-    private async Task FillContextAsync(CommandContext context, Message message)
+    private async Task FillContextAsync(CommandContext context, Message message, IServiceScope scope)
     {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        context.Message = message;
         context.Payload = message.Text;
-        context.User = await _dbContext.Users.FindAsync(message.From.Id);
-        context.Checkpoint = _interaction.GetCurrentCheckpoint(context.User.Id);
+        context.User = await dbContext.Users.FindAsync(message.From.Id);
+        context.Checkpoint = _interaction.GetCurrentCheckpoint(message.From.Id);
 
         // Extract command from checkpoint if possible
-        if (context.Checkpoint is not null)
+        if (context.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
-            context.Resources = _commands.GetResources(context.Checkpoint.CommandTypeName);
+            context.Resources = _commands.GetResources(commandCheckpoint.CommandTypeName);
             return;
         }
 
         // Parse mention
-        var mention = _parser.TryParseMentionFromBeginning(context.Payload);
-        if (mention is null)
+        if (context.Checkpoint is MentionCheckpoint)
+            context.ResetCheckpoint();
+        else
         {
-            Log.Information("No mention found in message");
-            return;
-        }
-        
-        context.Payload = context.Payload[mention.Segment.Length..].TrimStart();
-        if (string.IsNullOrWhiteSpace(context.Payload))
-        {
-            Log.Information("Single mention message detected");
-            context.Resources = _commands.GetResources<MentionCommand>();
-            return;
+            var mention = _parser.TryParseMentionFromBeginning(context.Payload);
+            if (mention is null)
+            {
+                Log.Information("No mention found in message");
+                return;
+            }
+
+            // Response to single mention
+            context.Payload = context.Payload[mention.Segment.Length..].TrimStart();
+            if (string.IsNullOrWhiteSpace(context.Payload))
+            {
+                Log.Information("Single mention message");
+                context.Resources = _commands.GetResources<MentionCommand>();
+                context.SetMentionCheckpoint("SingleMentionMessage");
+                return;
+            }
         }
 
         // Find command by alias
@@ -106,7 +115,7 @@ public class UpdateHandler : IUpdateHandler
             context.Resources = _commands.GetResources<MisunderstandingCommand>();
             return;
         }
-        
+
         context.Resources = _commands.GetResourcesByAlias(alias.Case);
         context.Payload = context.Payload[alias.Segment.Length..].TrimStart();
     }
