@@ -16,12 +16,15 @@ public class WebSearchCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(context.Payload))
+        if (context.Checkpoint is not null)
+            context.ResetCheckpoint();
+        else if (string.IsNullOrWhiteSpace(context.Payload))
         {
             await context.ReplyAsync(context.Resources.Variants["SearchWhat"].PickRandom());
             context.SetCommandCheckpoint("SearchWhat");
+            return;
         }
-
+        
         // Perform web search
         var (results, url) = await _webSearch.SearchAsync(context.Payload);
         cancellationToken.ThrowIfCancellationRequested();
