@@ -46,6 +46,23 @@ namespace Radzinsky.Persistence.Migrations
 
                     b.ToTable("Users");
                 });
+
+            modelBuilder.Entity("Radzinsky.Domain.Models.UserBio", b =>
+                {
+                    b.Property<long>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("UserId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserBios");
+                });
 #pragma warning restore 612, 618
         }
     }

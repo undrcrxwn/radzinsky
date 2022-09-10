@@ -22,6 +22,19 @@ namespace Radzinsky.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserBios",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Description = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserBios", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -38,6 +51,9 @@ namespace Radzinsky.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Chats");
+
+            migrationBuilder.DropTable(
+                name: "UserBios");
 
             migrationBuilder.DropTable(
                 name: "Users");
