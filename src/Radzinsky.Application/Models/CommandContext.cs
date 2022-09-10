@@ -11,6 +11,7 @@ public class CommandContext
     public Radzinsky.Domain.Models.User User;
     public Checkpoint? Checkpoint;
     public Message Message;
+    public Message? TargetMessage;
     public string Payload;
     public CommandResources? Resources;
 

@@ -73,6 +73,7 @@ public class UpdateHandler : IUpdateHandler
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         context.Message = message;
+        context.TargetMessage = message.ReplyToMessage;
         context.Payload = message.Text;
         context.User = await dbContext.Users.FindAsync(message.From.Id);
         context.Checkpoint = _interaction.GetCurrentCheckpoint(message.From.Id);
