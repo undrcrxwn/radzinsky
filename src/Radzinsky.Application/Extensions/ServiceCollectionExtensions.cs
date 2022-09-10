@@ -20,7 +20,8 @@ public static class ServiceCollectionExtensions
         .AddLinguisticParsing()
         .AddSingleton<IUpdateHandler, UpdateHandler>()
         .AddSingleton<IWebSearchService, GoogleSearchService>()
-        .AddSingleton<IRuntimeInfoService, RuntimeInfoService>();
+        .AddSingleton<IRuntimeInfoService, RuntimeInfoService>()
+        .AddScoped<CommandContext>();
 
     private static IServiceCollection AddCommands(this IServiceCollection services)
     {

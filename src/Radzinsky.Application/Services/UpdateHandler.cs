@@ -1,31 +1,33 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Commands;
 using Radzinsky.Application.Models;
+using Radzinsky.Persistence;
 using Serilog;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace Radzinsky.Application.Services;
 
 public class UpdateHandler : IUpdateHandler
 {
-    private readonly ITelegramBotClient _bot;
-    private readonly IEnumerable<CommandResources> _commands;
+    private readonly ICommandsService _commands;
     private readonly ILinguisticParser _parser;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IInteractionService _interaction;
+    private readonly ApplicationDbContext _dbContext;
 
     public UpdateHandler(
-        IEnumerable<CommandResources> commands,
-        IServiceScopeFactory scopeFactory,
+        ICommandsService commands,
         ILinguisticParser parser,
-        ITelegramBotClient bot)
+        IServiceScopeFactory scopeFactory,
+        IInteractionService interaction,
+        ApplicationDbContext dbContext)
     {
         _commands = commands;
-        _scopeFactory = scopeFactory;
         _parser = parser;
-        _bot = bot;
+        _scopeFactory = scopeFactory;
+        _interaction = interaction;
+        _dbContext = dbContext;
     }
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken)
@@ -58,54 +60,54 @@ public class UpdateHandler : IUpdateHandler
     private async Task HandleTextMessageAsync(Message message)
     {
         // Create command context
-        var cts = new CancellationTokenSource();
-        var context = new CommandContext
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<CommandContext>();
+        await FillContextAsync(context, message);
+        
+        // Execute command
+        var command = _commands.GetCommandInstance(scope, context.Resources.CommandTypeName);
+        await command.ExecuteAsync(context, new CancellationTokenSource().Token);
+    }
+
+    private async Task FillContextAsync(CommandContext context, Message message)
+    {
+        context.Payload = message.Text;
+        context.User = await _dbContext.Users.FindAsync(message.From.Id);
+        context.Checkpoint = _interaction.GetCurrentCheckpoint(context.User.Id);
+
+        // Extract command from checkpoint if possible
+        if (context.Checkpoint is not null)
         {
-            Bot = _bot,
-            Message = message
-        };
+            context.Resources = _commands.GetResources(context.Checkpoint.CommandTypeName);
+            return;
+        }
 
         // Parse mention
-        var mention = _parser.TryParseMentionFromBeginning(message.Text);
+        var mention = _parser.TryParseMentionFromBeginning(context.Payload);
         if (mention is null)
         {
             Log.Information("No mention found in message");
             return;
         }
         
-        var rest = message.Text[mention.Segment.Length..].TrimStart();
-        if (string.IsNullOrWhiteSpace(rest))
+        context.Payload = context.Payload[mention.Segment.Length..].TrimStart();
+        if (string.IsNullOrWhiteSpace(context.Payload))
         {
             Log.Information("Single mention message detected");
-            context.Resources = _commands.First(x => x.CommandTypeName == typeof(MentionCommand).FullName);
-            await new MentionCommand().ExecuteAsync(context, cts.Token);
+            context.Resources = _commands.GetResources<MentionCommand>();
             return;
         }
 
-        // Parse command alias
-        var alias = _parser.TryParseCommandAliasFromBeginning(rest);
+        // Find command by alias
+        var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
         if (alias is null)
         {
             Log.Information("No command alias found in message");
-            context.Resources = _commands.First(x => x.CommandTypeName == typeof(MisunderstandingCommand).FullName);
-            await new MisunderstandingCommand().ExecuteAsync(context, cts.Token);
+            context.Resources = _commands.GetResources<MisunderstandingCommand>();
             return;
         }
         
-        context.Payload = rest[alias.Segment.Length..].TrimStart();
-
-        // Find command
-        context.Resources = _commands.First(x => x.Aliases.Contains(alias.Case));
-        using var scope = _scopeFactory.CreateScope();
-        var command = GetCommandInstanceByName(context.Resources.CommandTypeName, scope);
-
-        // Execute command
-        await command.ExecuteAsync(context, cts.Token);
-    }
-
-    private ICommand GetCommandInstanceByName(string commandTypeName, IServiceScope scope)
-    {
-        var commandType = Type.GetType(commandTypeName);
-        return (ICommand)scope.ServiceProvider.GetRequiredService(commandType);
+        context.Resources = _commands.GetResourcesByAlias(alias.Case);
+        context.Payload = context.Payload[alias.Segment.Length..].TrimStart();
     }
 }

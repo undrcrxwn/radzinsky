@@ -9,12 +9,19 @@ namespace Radzinsky.Application.Commands;
 public class WebSearchCommand : ICommand
 {
     private readonly IWebSearchService _webSearch;
+    private readonly IInteractionService _interaction;
 
     public WebSearchCommand(IWebSearchService webSearch) =>
         _webSearch = webSearch;
-    
+
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(context.Payload))
+        {
+            await context.ReplyAsync(context.Resources.Variants["SearchWhat"].PickRandom());
+            context.SetCheckpoint("SearchWhat");
+        }
+
         // Perform web search
         var (results, url) = await _webSearch.SearchAsync(context.Payload);
         cancellationToken.ThrowIfCancellationRequested();
