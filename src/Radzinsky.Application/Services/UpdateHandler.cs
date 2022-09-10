@@ -85,18 +85,16 @@ public class UpdateHandler : IUpdateHandler
         }
 
         // Parse mention
-        if (context.Checkpoint is MentionCheckpoint)
-            context.ResetCheckpoint();
-        else
+        var mention = _parser.TryParseMentionFromBeginning(context.Payload);
+        if (mention is null && context.Checkpoint is null)
         {
-            var mention = _parser.TryParseMentionFromBeginning(context.Payload);
-            if (mention is null)
-            {
-                Log.Information("No mention found in message");
-                return;
-            }
+            Log.Information("No mention found in message");
+            return;
+        }
 
-            // Response to single mention
+        // Remove possible mention from payload
+        if (mention is not null)
+        {
             context.Payload = context.Payload[mention.Segment.Length..].TrimStart();
             if (string.IsNullOrWhiteSpace(context.Payload))
             {
@@ -106,6 +104,10 @@ public class UpdateHandler : IUpdateHandler
                 return;
             }
         }
+
+        // Reset mention checkpoint
+        if (context.Checkpoint is MentionCheckpoint)
+            context.ResetCheckpoint();
 
         // Find command by alias
         var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
