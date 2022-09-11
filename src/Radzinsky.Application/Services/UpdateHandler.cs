@@ -75,9 +75,9 @@ public class UpdateHandler : IUpdateHandler
 
         context.Message = message;
         context.TargetMessage = message.ReplyToMessage;
-        context.IsReplyToMe = context.Message?.ReplyToMessage?.From?.Id == context.Bot.BotId;
+        context.IsReplyToMe = context.Message.ReplyToMessage?.From?.Id == context.Bot.BotId;
         context.IsPrivateMessage = message.Chat.Type == ChatType.Private;
-        context.Payload = message.Text;
+        context.Payload = message.Text!;
         context.User = await dbContext.Users.FindAsync(message.From.Id);
         context.Checkpoint = _interaction.TryGetCurrentCheckpoint(message.From.Id);
 
