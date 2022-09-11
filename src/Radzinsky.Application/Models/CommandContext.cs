@@ -12,6 +12,8 @@ public class CommandContext
     public Checkpoint? Checkpoint;
     public Message Message;
     public Message? TargetMessage;
+    public bool IsReplyToMe;
+    public bool IsPrivateMessage;
     public string Payload;
     public CommandResources? Resources;
 

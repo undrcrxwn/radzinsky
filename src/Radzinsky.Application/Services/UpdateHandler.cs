@@ -5,6 +5,7 @@ using Radzinsky.Application.Models;
 using Radzinsky.Persistence;
 using Serilog;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Application.Services;
 
@@ -74,6 +75,8 @@ public class UpdateHandler : IUpdateHandler
 
         context.Message = message;
         context.TargetMessage = message.ReplyToMessage;
+        context.IsReplyToMe = context.Message?.ReplyToMessage?.From?.Id == context.Bot.BotId;
+        context.IsPrivateMessage = message.Chat.Type == ChatType.Private;
         context.Payload = message.Text;
         context.User = await dbContext.Users.FindAsync(message.From.Id);
         context.Checkpoint = _interaction.TryGetCurrentCheckpoint(message.From.Id);
@@ -87,7 +90,10 @@ public class UpdateHandler : IUpdateHandler
 
         // Parse mention
         var mention = _parser.TryParseMentionFromBeginning(context.Payload);
-        if (mention is null && context.Checkpoint is null)
+        if (mention is null &&
+            context.Checkpoint is null &&
+            !context.IsReplyToMe &&
+            !context.IsPrivateMessage)
         {
             Log.Information("No mention found in message");
             return;
