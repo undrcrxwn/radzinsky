@@ -25,17 +25,29 @@ public class InteractionService : IInteractionService
         return checkpoint;
     }
 
-    public Checkpoint? GetCurrentCheckpoint(long userId)
+    public Checkpoint? TryGetCurrentCheckpoint(long userId)
     {
-        _cache.TryGetValue(GetCacheEntryName(userId), out Checkpoint? checkpoint);
+        _cache.TryGetValue(GetCheckpointCacheEntryName(userId), out Checkpoint? checkpoint);
         return checkpoint;
     }
 
     public void ResetCheckpoint(long userId) =>
-        _cache.Remove(GetCacheEntryName(userId));
+        _cache.Remove(GetCheckpointCacheEntryName(userId));
+
+    public async Task SetPreviousReplyMessageIdAsync(string commandTypeName, long chatId, int messageId) =>
+        _cache.Set(GetReplyMessageIdCacheEntryName(commandTypeName, chatId), messageId);
+
+    public async Task<int?> TryGetPreviousReplyMessageIdAsync(string commandTypeName, long chatId)
+    {
+        _cache.TryGetValue(GetReplyMessageIdCacheEntryName(commandTypeName, chatId), out int? messageId);
+        return messageId;
+    }
 
     private void SetUserCheckpoint(long userId, Checkpoint checkpoint) =>
-        _cache.Set(GetCacheEntryName(userId), checkpoint, checkpoint.Duration);
+        _cache.Set(GetCheckpointCacheEntryName(userId), checkpoint, checkpoint.Duration);
     
-    private static string GetCacheEntryName(long userId) => $"Checkpoint-{userId}";
+    private static string GetCheckpointCacheEntryName(long userId) => $"Checkpoint-{userId}";
+    
+    private static string GetReplyMessageIdCacheEntryName(string commandTypeName, long chatId) =>
+        $"Reply-{commandTypeName}-{chatId}";
 }

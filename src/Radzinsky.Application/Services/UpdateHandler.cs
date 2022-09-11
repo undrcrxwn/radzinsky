@@ -76,7 +76,7 @@ public class UpdateHandler : IUpdateHandler
         context.TargetMessage = message.ReplyToMessage;
         context.Payload = message.Text;
         context.User = await dbContext.Users.FindAsync(message.From.Id);
-        context.Checkpoint = _interaction.GetCurrentCheckpoint(message.From.Id);
+        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(message.From.Id);
 
         // Extract command from checkpoint if possible
         if (context.Checkpoint is CommandCheckpoint commandCheckpoint)

@@ -28,7 +28,7 @@ public class CommandContext
         Checkpoint = _interaction.IssueMentionCheckpoint(name, Message.From.Id);
         return Checkpoint;
     }
-    
+
     public Checkpoint SetCommandCheckpoint(string name)
     {
         Checkpoint = _interaction.IssueCommandCheckpoint(name, Resources.CommandTypeName, Message.From.Id);
@@ -41,6 +41,30 @@ public class CommandContext
         Checkpoint = null;
     }
 
-    public async Task ReplyAsync(string text, ParseMode? parseMode = null, bool? disableWebPagePreview = null) =>
-        await Bot.SendTextMessageAsync(Message.Chat.Id, text, parseMode, disableWebPagePreview: disableWebPagePreview);
+    public async Task<Message> ReplyAsync(
+        string text,
+        ParseMode? parseMode = null,
+        bool? disableWebPagePreview = null,
+        bool preventTracking = false)
+    {
+        var message = await Bot.SendTextMessageAsync(Message.Chat.Id, text, parseMode,
+            disableWebPagePreview: disableWebPagePreview);
+
+        if (!preventTracking)
+            await _interaction.SetPreviousReplyMessageIdAsync(
+                Resources.CommandTypeName, message.Chat.Id, message.MessageId);
+
+        return message;
+    }
+
+    public async Task DeletePreviousReplyAsync()
+    {
+        var messageId = await _interaction.TryGetPreviousReplyMessageIdAsync(
+            Resources.CommandTypeName, Message.Chat.Id);
+        if (messageId is not null)
+            await DeleteMessageAsync(messageId.Value);
+    }
+
+    public async Task DeleteMessageAsync(int messageId) =>
+        await Bot.DeleteMessageAsync(Message.Chat.Id, messageId);
 }

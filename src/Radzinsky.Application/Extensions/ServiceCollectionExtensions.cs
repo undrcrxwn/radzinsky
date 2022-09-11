@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         .AddSingleton<IRuntimeInfoService, RuntimeInfoService>()
         .AddSingleton<IInteractionService, InteractionService>()
         .AddSingleton<ICommandsService, CommandsService>()
+        .AddSingleton<IHolidaysService, HolidaysService>()
         .AddScoped<CommandContext>();
 
     private static IServiceCollection AddCommands(this IServiceCollection services)
