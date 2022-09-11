@@ -1,4 +1,7 @@
+using Hangfire;
+using Hangfire.AspNetCore;
 using Radzinsky.Application.Extensions;
+using Radzinsky.Application.Services;
 using Radzinsky.Host;
 using Radzinsky.Host.Services;
 using Radzinsky.Persistence.Extensions;
@@ -17,10 +20,10 @@ var botConfig = builder.Configuration.GetSection("BotConfiguration").Get<BotConf
 builder.Services.AddHostedService<WebhookConfigurator>();
 
 builder.Services.AddHttpClient("tgwebhook")
-    .AddTypedClient<ITelegramBotClient>(httpClient => new TelegramBotClient(botConfig.BotToken, httpClient));
+    .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(botConfig.BotToken, client));
 
 builder.Services
-    .AddApplication()
+    .AddApplication(builder.Configuration)
     .AddPersistence(builder.Configuration)
     .AddControllers()
     .AddNewtonsoftJson();
@@ -38,5 +41,11 @@ app.UseEndpoints(endpoints =>
         new { controller = "Webhook", action = "Post" });
     endpoints.MapControllers();
 });
+
+var factory = app.Services.GetRequiredService<IServiceScopeFactory>();
+GlobalConfiguration.Configuration.UseActivator(
+    new AspNetCoreJobActivator(factory));
+
+app.UseHangfireDashboard();
 
 app.Run();

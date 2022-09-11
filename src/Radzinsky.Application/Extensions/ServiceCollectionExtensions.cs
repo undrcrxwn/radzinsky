@@ -1,4 +1,7 @@
 ﻿using System.Reflection;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Radzinsky.Application.Abstractions;
@@ -13,15 +16,16 @@ public static class ServiceCollectionExtensions
     private const string CommandResourcesPath = "Resources/commands.json";
     private const string SelfResourcesPath = "Resources/self.json";
 
-    public static IServiceCollection AddApplication(this IServiceCollection services) => services
+    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration) => services
         .AddSelfResources()
         .AddMemoryCache()
+        .AddHangfire(configuration)
         .AddCommandResources()
         .AddCommands()
         .AddLinguisticParsing()
         .AddSingleton<IUpdateHandler, UpdateHandler>()
         .AddSingleton<IWebSearchService, GoogleSearchService>()
-        .AddSingleton<IRuntimeInfoService, RuntimeInfoService>()
+        .AddTransient<IRuntimeInfoService, RuntimeInfoService>()
         .AddSingleton<IInteractionService, InteractionService>()
         .AddSingleton<ICommandsService, CommandsService>()
         .AddSingleton<IHolidaysService, HolidaysService>()
@@ -58,4 +62,9 @@ public static class ServiceCollectionExtensions
         .AddSingleton<IStringDistanceMeasurer, DamerauLevenshteinSimilarityMeasurer>()
         .AddSingleton<IStringSimilarityMeasurer, StringSimilarityMeasurer>()
         .AddSingleton<ILinguisticParser, LinguisticParser>();
+
+    private static IServiceCollection AddHangfire(this IServiceCollection services, IConfiguration configuration) => services
+        .AddHangfire(options =>
+            options.UsePostgreSqlStorage(configuration.GetConnectionString("HangfireConnection")))
+        .AddHangfireServer();
 }
