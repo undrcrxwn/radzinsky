@@ -28,6 +28,7 @@ public class WebhookConfigurator : IHostedService
         await botClient.SetWebhookAsync(
             url: webhookAddress,
             allowedUpdates: Array.Empty<UpdateType>(),
+            dropPendingUpdates: true,
             cancellationToken: cancellationToken);
     }
 

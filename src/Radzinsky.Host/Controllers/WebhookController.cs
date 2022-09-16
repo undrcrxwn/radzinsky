@@ -7,17 +7,12 @@ namespace Radzinsky.Host.Controllers;
 
 public class WebhookController : Controller
 {
-    private static readonly TimeSpan MaxUpdateTimeout = TimeSpan.FromSeconds(5);
-    
     public async Task<IActionResult> Post(
         [FromServices] IUpdateHandler updateHandler,
         [FromBody] Update update)
     {
         if (update.Message is null)
             return Ok("Update has no message");
-        
-        if (DateTime.UtcNow - update.Message.Date.ToUniversalTime() > MaxUpdateTimeout)
-            return Ok("Update timed out");
         
         Log.Information("Incoming message update from {0} at chat {1} ({2})",
             update.Message.From, update.Message.Chat.Username, update.Message.Chat.Id);
