@@ -16,7 +16,7 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta2" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
         <PackageReference Include="Telegram.Bot" Version="18.0.0" />
     </ItemGroup>
 
