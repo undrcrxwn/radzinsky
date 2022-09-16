@@ -14,13 +14,13 @@ public class BioCommand : ICommand
     
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.TargetMessage is null)
+        if (context.Message.ReplyTarget is null)
         {
             await context.ReplyAsync(context.Resources.Variants["NoTarget"].PickRandom());
             return;
         }
         
-        var bio = await _dbContext.UserBios.FindAsync(context.TargetMessage.From.Id);
+        var bio = await _dbContext.UserBios.FindAsync(context.Message.ReplyTarget.Sender.Id);
         if (bio is null)
         {
             await context.ReplyAsync(context.Resources.Variants["NoBio"].PickRandom());

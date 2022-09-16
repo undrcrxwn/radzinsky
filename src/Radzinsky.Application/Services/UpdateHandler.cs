@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Mapster;
+using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Commands;
 using Radzinsky.Application.Models;
@@ -6,6 +7,7 @@ using Radzinsky.Persistence;
 using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Message = Radzinsky.Domain.Models.Message;
 
 namespace Radzinsky.Application.Services;
 
@@ -15,6 +17,7 @@ public class UpdateHandler : IUpdateHandler
     private readonly ILinguisticParser _parser;
     private readonly IInteractionService _interaction;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IKeyboardLayoutTranslator _keyboardLayoutTranslator;
     private readonly ApplicationDbContext _dbContext;
     private readonly CommandContext _context;
 
@@ -23,6 +26,7 @@ public class UpdateHandler : IUpdateHandler
         ILinguisticParser parser,
         IInteractionService interaction,
         IServiceScopeFactory scopeFactory,
+        IKeyboardLayoutTranslator keyboardLayoutTranslator,
         ApplicationDbContext dbContext,
         CommandContext context)
     {
@@ -30,6 +34,7 @@ public class UpdateHandler : IUpdateHandler
         _parser = parser;
         _interaction = interaction;
         _scopeFactory = scopeFactory;
+        _keyboardLayoutTranslator = keyboardLayoutTranslator;
         _dbContext = dbContext;
         _context = context;
     }
@@ -61,7 +66,7 @@ public class UpdateHandler : IUpdateHandler
         }
     }
 
-    private async Task HandleTextMessageAsync(Message message)
+    private async Task HandleTextMessageAsync(Telegram.Bot.Types.Message message)
     {
         // Fill command context
         await FillContextAsync(_context, message);
@@ -75,15 +80,15 @@ public class UpdateHandler : IUpdateHandler
         await command.ExecuteAsync(_context, new CancellationTokenSource().Token);
     }
 
-    private async Task FillContextAsync(CommandContext context, Message message)
+    private async Task FillContextAsync(CommandContext context, Telegram.Bot.Types.Message message)
     {
-        context.Message = message;
-        context.TargetMessage = message.ReplyToMessage;
-        context.IsReplyToMe = context.Message.ReplyToMessage?.From?.Id == context.Bot.BotId;
-        context.IsPrivateMessage = message.Chat.Type == ChatType.Private;
-        context.Payload = message.Text!;
-        context.User = await _dbContext.Users.FindAsync(message.From.Id);
-        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(message.From.Id);
+        context.Message = message.Adapt<Message>();
+        context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);
+        context.Message.IsReplyToMe = context.Message.Sender.Id == context.Bot.BotId;
+        context.Message.IsPrivate = message.Chat.Type == ChatType.Private;
+
+        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender!.Id);
+        context.Payload = context.Message.NormalizedText;
 
         // Extract command from checkpoint if possible
         if (context.Checkpoint is CommandCheckpoint commandCheckpoint)
@@ -96,8 +101,8 @@ public class UpdateHandler : IUpdateHandler
         var mention = _parser.TryParseMentionFromBeginning(context.Payload);
         if (mention is null &&
             context.Checkpoint is null &&
-            !context.IsReplyToMe &&
-            !context.IsPrivateMessage)
+            !context.Message.IsReplyToMe &&
+            !context.Message.IsPrivate)
         {
             Log.Information("No mention found in message");
             return;

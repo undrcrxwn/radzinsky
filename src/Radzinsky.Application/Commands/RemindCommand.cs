@@ -12,8 +12,8 @@ public class RemindCommand : ICommand
         BackgroundJob.Schedule<RemindJob>(job =>
             job.RemindAsync(
                 context.Message.Chat.Id,
-                context.Message.From.Id,
-                context.Message.From.FirstName,
+                context.Message.Sender.Id,
+                context.Message.Sender.FirstName,
                 context.Payload), TimeSpan.FromSeconds(10));
 
         await context.ReplyAsync(context.Resources.Variants["ReminderSet"].PickRandom());

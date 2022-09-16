@@ -1,6 +1,6 @@
 ﻿using Radzinsky.Application.Abstractions;
+using Radzinsky.Domain.Models;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Application.Models;
@@ -8,14 +8,10 @@ namespace Radzinsky.Application.Models;
 public class CommandContext
 {
     public ITelegramBotClient Bot;
-    public Radzinsky.Domain.Models.User User;
-    public Checkpoint? Checkpoint;
     public Message Message;
-    public Message? TargetMessage;
-    public bool IsReplyToMe;
-    public bool IsPrivateMessage;
-    public string Payload;
+    public Checkpoint? Checkpoint;
     public CommandResources? Resources;
+    public string Payload;
 
     private readonly IInteractionService _interaction;
 
@@ -27,23 +23,23 @@ public class CommandContext
 
     public Checkpoint SetMentionCheckpoint(string name)
     {
-        Checkpoint = _interaction.IssueMentionCheckpoint(name, Message.From.Id);
+        Checkpoint = _interaction.IssueMentionCheckpoint(name, Message.Sender.Id);
         return Checkpoint;
     }
 
     public Checkpoint SetCommandCheckpoint(string name)
     {
-        Checkpoint = _interaction.IssueCommandCheckpoint(name, Resources.CommandTypeName, Message.From.Id);
+        Checkpoint = _interaction.IssueCommandCheckpoint(name, Resources.CommandTypeName, Message.Sender.Id);
         return Checkpoint;
     }
 
     public void ResetCheckpoint()
     {
-        _interaction.ResetCheckpoint(Message.From.Id);
+        _interaction.ResetCheckpoint(Message.Sender.Id);
         Checkpoint = null;
     }
 
-    public async Task<Message> ReplyAsync(
+    public async Task<int> ReplyAsync(
         string text,
         ParseMode? parseMode = null,
         bool? disableWebPagePreview = null,
@@ -56,7 +52,7 @@ public class CommandContext
             await _interaction.SetPreviousReplyMessageIdAsync(
                 Resources.CommandTypeName, message.Chat.Id, message.MessageId);
 
-        return message;
+        return message.MessageId;
     }
 
     public async Task DeletePreviousReplyAsync()

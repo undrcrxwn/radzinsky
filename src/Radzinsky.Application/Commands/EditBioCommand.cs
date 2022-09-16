@@ -24,12 +24,12 @@ public class EditBioCommand : ICommand
             return;
         }
 
-        var bio = await _dbContext.UserBios.FindAsync(context.Message.From.Id);
+        var bio = await _dbContext.UserBios.FindAsync(context.Message.Sender.Id);
         if (bio is null)
         {
             bio = new UserBio()
             {
-                UserId = context.Message.From.Id,
+                UserId = context.Message.Sender.Id,
                 Description = context.Payload
             };
             await _dbContext.UserBios.AddAsync(bio);
