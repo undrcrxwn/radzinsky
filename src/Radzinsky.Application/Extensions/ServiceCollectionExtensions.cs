@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         .AddCommandResources()
         .AddCommands()
         .AddLinguisticParsing()
-        .AddSingleton<IUpdateHandler, UpdateHandler>()
+        .AddScoped<IUpdateHandler, UpdateHandler>()
         .AddSingleton<IWebSearchService, GoogleSearchService>()
         .AddTransient<IRuntimeInfoService, RuntimeInfoService>()
         .AddSingleton<IInteractionService, InteractionService>()

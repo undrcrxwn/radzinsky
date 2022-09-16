@@ -13,19 +13,25 @@ public class UpdateHandler : IUpdateHandler
 {
     private readonly ICommandsService _commands;
     private readonly ILinguisticParser _parser;
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IInteractionService _interaction;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ApplicationDbContext _dbContext;
+    private readonly CommandContext _context;
 
     public UpdateHandler(
         ICommandsService commands,
         ILinguisticParser parser,
+        IInteractionService interaction,
         IServiceScopeFactory scopeFactory,
-        IInteractionService interaction)
+        ApplicationDbContext dbContext,
+        CommandContext context)
     {
         _commands = commands;
         _parser = parser;
-        _scopeFactory = scopeFactory;
         _interaction = interaction;
+        _scopeFactory = scopeFactory;
+        _dbContext = dbContext;
+        _context = context;
     }
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken)
@@ -57,28 +63,26 @@ public class UpdateHandler : IUpdateHandler
 
     private async Task HandleTextMessageAsync(Message message)
     {
-        // Create command context
-        using var scope = _scopeFactory.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<CommandContext>();
-        await FillContextAsync(context, message, scope);
+        // Fill command context
+        await FillContextAsync(_context, message);
 
-        // Execute command if possible
-        if (context.Resources is null)
+        // Find and execute command if possible
+        if (_context.Resources is null)
             return;
-        var command = _commands.GetCommandInstance(scope, context.Resources.CommandTypeName);
-        await command.ExecuteAsync(context, new CancellationTokenSource().Token);
+        
+        var scope = _scopeFactory.CreateScope();
+        var command = _commands.GetCommandInstance(scope, _context.Resources.CommandTypeName);
+        await command.ExecuteAsync(_context, new CancellationTokenSource().Token);
     }
 
-    private async Task FillContextAsync(CommandContext context, Message message, IServiceScope scope)
+    private async Task FillContextAsync(CommandContext context, Message message)
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
         context.Message = message;
         context.TargetMessage = message.ReplyToMessage;
         context.IsReplyToMe = context.Message.ReplyToMessage?.From?.Id == context.Bot.BotId;
         context.IsPrivateMessage = message.Chat.Type == ChatType.Private;
         context.Payload = message.Text!;
-        context.User = await dbContext.Users.FindAsync(message.From.Id);
+        context.User = await _dbContext.Users.FindAsync(message.From.Id);
         context.Checkpoint = _interaction.TryGetCurrentCheckpoint(message.From.Id);
 
         // Extract command from checkpoint if possible
