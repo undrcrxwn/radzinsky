@@ -14,7 +14,7 @@ public class RemindCommand : ICommand
                 context.Message.Chat.Id,
                 context.Message.Sender.Id,
                 context.Message.Sender.FirstName,
-                context.Payload), TimeSpan.FromSeconds(10));
+                context.Payload), TimeSpan.FromMinutes(5));
 
         await context.ReplyAsync(context.Resources.Variants["ReminderSet"].PickRandom());
     }
