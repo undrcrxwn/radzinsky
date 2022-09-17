@@ -9,6 +9,7 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
     const string RussianCharacters = "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ";
     const string EnglishCharacters = "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>";
     private const double NaturalnessThreshold = 0.5;
+    private const int MinInputLength = 5;
 
     private readonly BigramFrequencies _frequencies;
 
@@ -23,6 +24,9 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 
     public string Translate(string input)
     {
+        if (input.Length < MinInputLength)
+            return input;
+
         var englishTranslation = TranslateByDictionary(input, RussianToEnglishCharacters);
         var russianTranslation = TranslateByDictionary(input, EnglishToRussianCharacters);
 
@@ -31,10 +35,10 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
             (input, _frequencies.EnglishBigramFrequencies),
             (input, _frequencies.RussianBigramFrequencies),
 
-            (englishTranslation, _frequencies.EnglishBigramFrequencies),
-            (englishTranslation, _frequencies.RussianBigramFrequencies),
+            // (englishTranslation, _frequencies.EnglishBigramFrequencies),
+            // (englishTranslation, _frequencies.RussianBigramFrequencies),
 
-            (russianTranslation, _frequencies.EnglishBigramFrequencies),
+            // (russianTranslation, _frequencies.EnglishBigramFrequencies),
             (russianTranslation, _frequencies.RussianBigramFrequencies)
         };
 
@@ -74,4 +78,4 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 
     private static IDictionary<T, T> MapItems<T>(IEnumerable<T> a, IEnumerable<T> b) =>
         a.Zip(b).ToDictionary(x => x.First, x => x.Second);
-} 
+}

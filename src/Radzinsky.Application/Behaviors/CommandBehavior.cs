@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Commands;
 using Radzinsky.Application.Delegates;
+using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models;
-using Radzinsky.Domain.Models;
 using Serilog;
 
 namespace Radzinsky.Application.Behaviors;
@@ -36,12 +35,18 @@ public class CommandBehavior : IBehavior
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
         // Fill command context
-        FillCommandContext(_commandContext, context);
+        var considerCommand = FillCommandContext(_commandContext, context);
 
         // Find and execute command if possible
-        if (_commandContext.Resources is null)
+        if (!considerCommand)
         {
             await next(context);
+            return;
+        }
+
+        if (_commandContext.Resources is null)
+        {
+            context.ReplyAsync(context.Resources.Variants["CannotUnderstandYou"].PickRandom());
             return;
         }
 
@@ -52,7 +57,7 @@ public class CommandBehavior : IBehavior
         }
     }
 
-    private void FillCommandContext(CommandContext commandContext, BehaviorContext behaviorContext)
+    private bool FillCommandContext(CommandContext commandContext, BehaviorContext behaviorContext)
     {
         commandContext.Message = behaviorContext.Message;
         commandContext.Checkpoint = behaviorContext.Checkpoint;
@@ -62,7 +67,7 @@ public class CommandBehavior : IBehavior
         if (commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
             commandContext.Resources = _resources.GetCommandResources(commandCheckpoint.CommandTypeName);
-            return;
+            return false;
         }
 
         // Parse mention
@@ -73,7 +78,7 @@ public class CommandBehavior : IBehavior
             !commandContext.Message.IsPrivate)
         {
             Log.Information("No mention found in message");
-            return;
+            return false;
         }
 
         // Remove possible mention from payload
@@ -84,15 +89,20 @@ public class CommandBehavior : IBehavior
         if (commandContext.Checkpoint is MentionCheckpoint)
             commandContext.ResetCheckpoint();
 
+        if (string.IsNullOrWhiteSpace(commandContext.Payload))
+            return false;
+
         // Find command by alias
         var alias = _parser.TryParseCommandAliasFromBeginning(commandContext.Payload);
         if (alias is null)
         {
             Log.Information("No command alias found in message");
-            return;
+            return true;
         }
 
         commandContext.Resources = _resources.GetCommandResourcesByAlias(alias.Case);
         commandContext.Payload = commandContext.Payload[alias.Segment.Length..].TrimStart();
+
+        return true;
     }
 }
