@@ -65,7 +65,7 @@ public class UpdateHandler : IUpdateHandler
     {
         context.Message = message.Adapt<Message>();
         context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);
-        context.Message.IsReplyToMe = context.Message.ReplyTarget.Sender.Id == context.Bot.BotId;
+        context.Message.IsReplyToMe = context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId;
         context.Message.IsPrivate = message.Chat.Type == ChatType.Private;
         context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender.Id);
     }
