@@ -8,7 +8,7 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 {
     const string RussianCharacters = "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ";
     const string EnglishCharacters = "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>";
-    private const double NaturalnessThreshold = 0.05;
+    private const double NaturalnessThreshold = 0.5;
 
     private readonly BigramFrequencies _frequencies;
 

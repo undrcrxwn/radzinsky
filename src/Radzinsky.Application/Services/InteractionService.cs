@@ -6,21 +6,22 @@ namespace Radzinsky.Application.Services;
 
 public class InteractionService : IInteractionService
 {
+    private const string MentionCheckpointName = "__Mention__";
     private readonly IMemoryCache _cache;
 
     public InteractionService(IMemoryCache cache) =>
         _cache = cache;
 
-    public MentionCheckpoint IssueMentionCheckpoint(string name, long userId)
+    public MentionCheckpoint IssueMentionCheckpoint(long userId)
     {
-        var checkpoint = new MentionCheckpoint(name, TimeSpan.FromSeconds(15));
+        var checkpoint = new MentionCheckpoint(MentionCheckpointName, TimeSpan.FromSeconds(15));
         SetUserCheckpoint(userId, checkpoint);
         return checkpoint;
     }
 
-    public CommandCheckpoint IssueCommandCheckpoint(string name, string commandTypeName, long userId)
+    public CommandCheckpoint IssueCheckpoint(string name, string handlerTypeName, long userId)
     {
-        var checkpoint = new CommandCheckpoint(name, TimeSpan.FromMinutes(1), commandTypeName);
+        var checkpoint = new CommandCheckpoint(name, TimeSpan.FromMinutes(1), handlerTypeName);
         SetUserCheckpoint(userId, checkpoint);
         return checkpoint;
     }
@@ -34,12 +35,12 @@ public class InteractionService : IInteractionService
     public void ResetCheckpoint(long userId) =>
         _cache.Remove(GetCheckpointCacheEntryName(userId));
 
-    public async Task SetPreviousReplyMessageIdAsync(string commandTypeName, long chatId, int messageId) =>
-        _cache.Set(GetReplyMessageIdCacheEntryName(commandTypeName, chatId), messageId);
+    public async Task SetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId, int messageId) =>
+        _cache.Set(GetReplyMessageIdCacheEntryName(handlerTypeName, chatId), messageId);
 
-    public async Task<int?> TryGetPreviousReplyMessageIdAsync(string commandTypeName, long chatId)
+    public async Task<int?> TryGetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId)
     {
-        _cache.TryGetValue(GetReplyMessageIdCacheEntryName(commandTypeName, chatId), out int? messageId);
+        _cache.TryGetValue(GetReplyMessageIdCacheEntryName(handlerTypeName, chatId), out int? messageId);
         return messageId;
     }
 

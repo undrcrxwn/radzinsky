@@ -1,7 +1,6 @@
 ﻿using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Commands;
 using Radzinsky.Application.Models;
 using Radzinsky.Persistence;
 using Serilog;
@@ -13,30 +12,39 @@ namespace Radzinsky.Application.Services;
 
 public class UpdateHandler : IUpdateHandler
 {
+    private readonly IEnumerable<IBehavior> _behaviors;
     private readonly ICommandsService _commands;
+    private readonly IResourcesService _resources;
     private readonly ILinguisticParser _parser;
     private readonly IInteractionService _interaction;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IKeyboardLayoutTranslator _keyboardLayoutTranslator;
     private readonly ApplicationDbContext _dbContext;
-    private readonly CommandContext _context;
+    private readonly CommandContext _commandContext;
+    private readonly BehaviorContext _behaviorContext;
 
     public UpdateHandler(
+        IEnumerable<IBehavior> behaviors,
         ICommandsService commands,
+        IResourcesService resources,
         ILinguisticParser parser,
         IInteractionService interaction,
         IServiceScopeFactory scopeFactory,
         IKeyboardLayoutTranslator keyboardLayoutTranslator,
         ApplicationDbContext dbContext,
-        CommandContext context)
+        CommandContext commandContext,
+        BehaviorContext behaviorContext)
     {
+        _behaviors = behaviors;
         _commands = commands;
+        _resources = resources;
         _parser = parser;
         _interaction = interaction;
         _scopeFactory = scopeFactory;
         _keyboardLayoutTranslator = keyboardLayoutTranslator;
         _dbContext = dbContext;
-        _context = context;
+        _commandContext = commandContext;
+        _behaviorContext = behaviorContext;
     }
 
     public async Task HandleAsync(Update update, CancellationToken cancellationToken)
@@ -52,89 +60,32 @@ public class UpdateHandler : IUpdateHandler
             update.Message.MessageId, update.Message.Chat.Id, update.Message.Text);
 #endif
 
-        try
-        {
-            await HandleTextMessageAsync(update.Message);
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "Unhandled exception raised while handling update: {@0}", update);
+        await FillBehaviorContextAsync(_behaviorContext, update.Message);
 
-#if DEBUG
-            throw;
-#endif
+
+        using var enumerator = _behaviors.GetEnumerator();
+        await RunNextBehaviorAsync(_behaviorContext);
+
+        async Task RunNextBehaviorAsync(BehaviorContext context)
+        {
+            if (enumerator.MoveNext())
+            {
+                var behaviorTypeName = enumerator.Current.GetType().FullName;
+                Log.Warning(behaviorTypeName);
+                context.Resources =
+                    _resources.GetBehaviorResources(behaviorTypeName);
+                
+                await enumerator.Current.HandleAsync(_behaviorContext, RunNextBehaviorAsync);
+            }
         }
     }
 
-    private async Task HandleTextMessageAsync(Telegram.Bot.Types.Message message)
-    {
-        // Fill command context
-        await FillContextAsync(_context, message);
-
-        // Find and execute command if possible
-        if (_context.Resources is null)
-            return;
-        
-        var scope = _scopeFactory.CreateScope();
-        var command = _commands.GetCommandInstance(scope, _context.Resources.CommandTypeName);
-        await command.ExecuteAsync(_context, new CancellationTokenSource().Token);
-    }
-
-    private async Task FillContextAsync(CommandContext context, Telegram.Bot.Types.Message message)
+    private async Task FillBehaviorContextAsync(BehaviorContext context, Telegram.Bot.Types.Message message)
     {
         context.Message = message.Adapt<Message>();
         context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);
         context.Message.IsReplyToMe = context.Message.Sender.Id == context.Bot.BotId;
         context.Message.IsPrivate = message.Chat.Type == ChatType.Private;
-
-        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender!.Id);
-        context.Payload = context.Message.NormalizedText;
-
-        // Extract command from checkpoint if possible
-        if (context.Checkpoint is CommandCheckpoint commandCheckpoint)
-        {
-            context.Resources = _commands.GetResources(commandCheckpoint.CommandTypeName);
-            return;
-        }
-
-        // Parse mention
-        var mention = _parser.TryParseMentionFromBeginning(context.Payload);
-        if (mention is null &&
-            context.Checkpoint is null &&
-            !context.Message.IsReplyToMe &&
-            !context.Message.IsPrivate)
-        {
-            Log.Information("No mention found in message");
-            return;
-        }
-
-        // Remove possible mention from payload
-        if (mention is not null)
-        {
-            context.Payload = context.Payload[mention.Segment.Length..].TrimStart();
-            if (string.IsNullOrWhiteSpace(context.Payload))
-            {
-                Log.Information("Single mention message");
-                context.Resources = _commands.GetResources<MentionCommand>();
-                context.SetMentionCheckpoint("SingleMentionMessage");
-                return;
-            }
-        }
-
-        // Reset mention checkpoint
-        if (context.Checkpoint is MentionCheckpoint)
-            context.ResetCheckpoint();
-
-        // Find command by alias
-        var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
-        if (alias is null)
-        {
-            Log.Information("No command alias found in message");
-            context.Resources = _commands.GetResources<MisunderstandingCommand>();
-            return;
-        }
-
-        context.Resources = _commands.GetResourcesByAlias(alias.Case);
-        context.Payload = context.Payload[alias.Segment.Length..].TrimStart();
+        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender.Id);
     }
 }

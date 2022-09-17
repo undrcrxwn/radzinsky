@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Behaviors;
 using Radzinsky.Application.Models;
 using Radzinsky.Application.Services;
 using Radzinsky.Domain.Models;
@@ -18,27 +19,30 @@ namespace Radzinsky.Application.Extensions;
 public static class ServiceCollectionExtensions
 {
     private const string CommandResourcesPath = "Resources/commands.json";
+    private const string BehaviorResourcesPath = "Resources/behaviors.json";
     private const string SelfResourcesPath = "Resources/self.json";
     private const string RussianBigramFrequenciesPath = "Resources/russian_bigram_frequencies.csv";
     private const string EnglishBigramFrequenciesPath = "Resources/english_bigram_frequencies.csv";
 
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration) =>
         services
-            .AddSelfResources()
             .AddMemoryCache()
+            .AddMapsterConfiguration()
             .AddHangfire(configuration)
-            .AddCommandResources()
             .AddCommands()
+            .AddBehaviors()
+            .AddResources()
             .AddLinguisticParsing()
             .AddBigramFrequencies()
-            .AddMapsterConfiguration()
             .AddScoped<IUpdateHandler, UpdateHandler>()
+            .AddScoped<IResourcesService, ResourcesService>()
             .AddSingleton<IWebSearchService, GoogleSearchService>()
             .AddTransient<IRuntimeInfoService, RuntimeInfoService>()
             .AddSingleton<IInteractionService, InteractionService>()
             .AddSingleton<ICommandsService, CommandsService>()
             .AddSingleton<IHolidaysService, HolidaysService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
+            .AddScoped<BehaviorContext>()
             .AddScoped<CommandContext>();
 
     private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services)
@@ -53,11 +57,28 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-    
+
+    private static IServiceCollection AddBehaviors(this IServiceCollection services)
+    {
+        // Register behaviors manually to preserve their order
+        services.AddScoped<IBehavior, CommandBehavior>();
+        services.AddScoped<IBehavior, MentionBehavior>();
+        services.AddScoped<IBehavior, WrongKeyboardLayoutBehavior>();
+
+        var handlerTypes = GetImplementationsOf<IBehavior>();
+
+        foreach (var handlerType in handlerTypes)
+        {
+            if (!services.Any(x => x.ImplementationType == handlerType))
+                Log.Warning("Handler of type {0} is not registrated", handlerType.FullName);
+        }
+
+        return services;
+    }
+
     private static IServiceCollection AddCommands(this IServiceCollection services)
     {
-        var commandTypes = Assembly.GetExecutingAssembly().GetTypes()
-            .Where(x => x.GetInterfaces().Contains(typeof(ICommand)));
+        var commandTypes = GetImplementationsOf<ICommand>();
 
         foreach (var commandType in commandTypes)
         {
@@ -68,8 +89,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static IServiceCollection AddResources(this IServiceCollection services) => services
+        .AddBehaviorResources()
+        .AddCommandResources()
+        .AddSelfResources();
+    
     private static IServiceCollection AddCommandResources(this IServiceCollection services) =>
         services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<CommandResources>>(CommandResourcesPath));
+
+    private static IServiceCollection AddBehaviorResources(this IServiceCollection services) =>
+        services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<BehaviorResources>>(BehaviorResourcesPath));
 
     private static IServiceCollection AddSelfResources(this IServiceCollection services) =>
         services.AddSingleton(DeserializeFromRelativeLocation<SelfResources>(SelfResourcesPath));
@@ -108,6 +137,10 @@ public static class ServiceCollectionExtensions
         return csvReader.GetRecords<BigramFrequency>()
             .ToDictionary(x => x.Bigram, x => (double)x.Frequency);
     }
+
+    private static IEnumerable<Type> GetImplementationsOf<T>() where T : class =>
+        Assembly.GetExecutingAssembly().GetTypes()
+            .Where(x => x.GetInterfaces().Contains(typeof(T)));
 
     private record BigramFrequency(string Bigram, double Frequency);
 }

@@ -46,22 +46,6 @@
     }
   },
   {
-    "CommandTypeName": "Radzinsky.Application.Commands.MentionCommand",
-    "Variants": {
-      "AtYourService": [
-        "Да, шеф?",
-        "Чего тебе?",
-        "Я!",
-        "Здесь",
-        "Чего вам?",
-        "Ну что опять?",
-        "Чем могу быть полезен?",
-        "Я здесь! Чего изволите?",
-        "Привет! Хотел о чём-нибудь попросить?"
-      ]
-    }
-  },
-  {
     "CommandTypeName": "Radzinsky.Application.Commands.WebSearchCommand",
     "Aliases": [
       "загугли",
