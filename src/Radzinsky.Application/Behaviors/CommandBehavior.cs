@@ -51,6 +51,8 @@ public class CommandBehavior : IBehavior
             context.ReplyAsync(context.Resources.Variants["CannotUnderstandYou"].PickRandom());
             return;
         }
+        
+        context.ResetCheckpoint();
 
         using (var scope = _scopeFactory.CreateScope())
         {
@@ -69,7 +71,7 @@ public class CommandBehavior : IBehavior
         if (commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
             commandContext.Resources = _resources.GetCommandResources(commandCheckpoint.CommandTypeName);
-            return false;
+            return true;
         }
 
         // Parse mention

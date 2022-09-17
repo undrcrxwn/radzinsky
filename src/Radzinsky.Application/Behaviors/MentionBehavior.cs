@@ -16,7 +16,8 @@ public class MentionBehavior : IBehavior
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
         var mention = _parser.TryParseMentionFromBeginning(context.Message.NormalizedText);
-        if (mention is null)
+        if (mention is null || !string.IsNullOrWhiteSpace(
+                context.Message.Text.Substring(mention.Segment.Length)))
         {
             next(context);
             return;

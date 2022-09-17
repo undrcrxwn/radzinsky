@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
 {
     private const string CommandResourcesPath = "Resources/commands.json";
     private const string BehaviorResourcesPath = "Resources/behaviors.json";
-    private const string SelfResourcesPath = "Resources/self.json";
+    private const string CommonResourcesPath = "Resources/common.json";
     private const string RussianBigramFrequenciesPath = "Resources/russian_bigram_frequencies.csv";
     private const string EnglishBigramFrequenciesPath = "Resources/english_bigram_frequencies.csv";
 
@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICommandsService, CommandsService>()
             .AddSingleton<IHolidaysService, HolidaysService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
+            .AddSingleton<ICalculator, Calculator>()
             .AddScoped<BehaviorContext>()
             .AddScoped<CommandContext>();
 
@@ -103,7 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<BehaviorResources>>(BehaviorResourcesPath));
 
     private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
-        services.AddSingleton(DeserializeFromRelativeLocation<CommonResources>(SelfResourcesPath));
+        services.AddSingleton(DeserializeFromRelativeLocation<CommonResources>(CommonResourcesPath));
 
     private static T DeserializeFromRelativeLocation<T>(string relativePath)
     {
