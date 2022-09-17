@@ -94,7 +94,7 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddResources(this IServiceCollection services) => services
         .AddBehaviorResources()
         .AddCommandResources()
-        .AddSelfResources();
+        .AddCommonResources();
     
     private static IServiceCollection AddCommandResources(this IServiceCollection services) =>
         services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<CommandResources>>(CommandResourcesPath));
@@ -102,8 +102,8 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddBehaviorResources(this IServiceCollection services) =>
         services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<BehaviorResources>>(BehaviorResourcesPath));
 
-    private static IServiceCollection AddSelfResources(this IServiceCollection services) =>
-        services.AddSingleton(DeserializeFromRelativeLocation<SelfResources>(SelfResourcesPath));
+    private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
+        services.AddSingleton(DeserializeFromRelativeLocation<CommonResources>(SelfResourcesPath));
 
     private static T DeserializeFromRelativeLocation<T>(string relativePath)
     {

@@ -24,7 +24,7 @@
       <None Update="Resources\commands.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Resources\self.json">
+      <None Update="Resources\common.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Resources\english_bigram_frequencies.csv">

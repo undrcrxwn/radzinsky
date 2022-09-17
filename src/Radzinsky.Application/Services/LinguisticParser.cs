@@ -7,22 +7,22 @@ namespace Radzinsky.Application.Services;
 
 public class LinguisticParser : ILinguisticParser
 {
-    private readonly SelfResources _selfResources;
+    private readonly CommonResources _commonResources;
     private readonly IEnumerable<CommandResources> _commandResources;
     private readonly IStringSimilarityMeasurer _similarityMeasurer;
 
     public LinguisticParser(
-        SelfResources selfResources,
+        CommonResources commonResources,
         IEnumerable<CommandResources> commandResources,
         IStringSimilarityMeasurer similarityMeasurer)
     {
-        _selfResources = selfResources;
+        _commonResources = commonResources;
         _commandResources = commandResources;
         _similarityMeasurer = similarityMeasurer;
     }
 
     public CaseParsingResult? TryParseMentionFromBeginning(string text) =>
-        TryParseCaseFromBeginning(text, _selfResources.Mentions);
+        TryParseCaseFromBeginning(text, _commonResources.Mentions);
 
     public CaseParsingResult? TryParseCommandAliasFromBeginning(string text)
     {
