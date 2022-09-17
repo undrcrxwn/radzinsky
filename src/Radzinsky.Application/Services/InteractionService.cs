@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models;
+using Radzinsky.Application.Models.Checkpoints;
 
 namespace Radzinsky.Application.Services;
 

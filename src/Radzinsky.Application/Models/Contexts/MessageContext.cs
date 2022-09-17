@@ -1,9 +1,10 @@
 ﻿using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Domain.Models;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
-namespace Radzinsky.Application.Models;
+namespace Radzinsky.Application.Models.Contexts;
 
 public class MessageContext
 {

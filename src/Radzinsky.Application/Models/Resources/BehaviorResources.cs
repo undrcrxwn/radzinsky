@@ -1,4 +1,4 @@
-﻿namespace Radzinsky.Application.Models;
+﻿namespace Radzinsky.Application.Models.Resources;
 
 public class BehaviorResources
 {
