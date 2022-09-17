@@ -6,8 +6,6 @@ That one single Telegram bot to replace all the others
 - Group games
 - Group vs group chatting sessions
 - Personal and group statistics
-- Personal and group bios
-- More flexible interaction process
 
 ### Solution structure
 - [`Radzinsy.Host`](src/Radzinsky.Host) — web app to host Telegram webhooks
