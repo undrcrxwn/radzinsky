@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Enumerations;
 using Radzinsky.Application.Models;
 
 namespace Radzinsky.Application.Services;
@@ -11,6 +12,7 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
     private const double NaturalnessThreshold = 0.5;
     private const int MinInputLength = 5;
 
+    private readonly IStringSimilarityMeasurer _similarityMeasurer;
     private readonly BigramFrequencies _frequencies;
 
     private static readonly IDictionary<char, char> RussianToEnglishCharacters =
@@ -19,8 +21,13 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
     private static readonly IDictionary<char, char> EnglishToRussianCharacters =
         MapItems(EnglishCharacters, RussianCharacters);
 
-    public KeyboardLayoutTranslator(BigramFrequencies frequencies) =>
+    public KeyboardLayoutTranslator(
+        IStringSimilarityMeasurer similarityMeasurer,
+        BigramFrequencies frequencies)
+    {
+        _similarityMeasurer = similarityMeasurer;
         _frequencies = frequencies;
+    }
 
     public string Translate(string input)
     {
@@ -50,7 +57,8 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 
         var bestResult = scores.MaxBy(x => x.Naturality);
 
-        return bestResult.Naturality >= NaturalnessThreshold
+        return bestResult.Naturality >= NaturalnessThreshold &&
+               _similarityMeasurer.MeasureSimilarity(input, bestResult.Input) <= StringSimilarity.Low
             ? bestResult.Input
             : input;
     }
