@@ -68,12 +68,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBehavior, MentionBehavior>();
         services.AddScoped<IBehavior, WrongKeyboardLayoutBehavior>();
 
-        var handlerTypes = GetImplementationsOf<IBehavior>();
+        var behaviorTypes = GetImplementationsOf<IBehavior>();
 
-        foreach (var handlerType in handlerTypes)
+        foreach (var behaviorType in behaviorTypes)
         {
-            if (!services.Any(x => x.ImplementationType == handlerType))
-                Log.Warning("Handler of type {0} is not registrated", handlerType.FullName);
+            if (!services.Any(x => x.ImplementationType == behaviorType))
+                Log.Warning("Behavior of type {0} is not registered", behaviorType.FullName);
         }
 
         return services;
