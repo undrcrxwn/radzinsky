@@ -6,8 +6,8 @@ namespace Radzinsky.Application.Services;
 
 public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 {
-    const string RussianCharacters = "йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ";
-    const string EnglishCharacters = "qwertyuiop[]asdfghjkl;'zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>";
+    const string RussianCharacters = "ёйцукенгшщзхъфывапролджэячсмитьбюЁЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ";
+    const string EnglishCharacters = "`qwertyuiop[]asdfghjkl;'zxcvbnm,.~QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>";
     private const double NaturalnessThreshold = 0.5;
     private const int MinInputLength = 5;
 
@@ -48,7 +48,7 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
         var bestResult = scores.MaxBy(x => x.Naturality);
 
         return bestResult.Naturality >= NaturalnessThreshold &&
-               _similarityMeasurer.MeasureSimilarity(input, bestResult.Output) <= StringSimilarity.Low
+               _similarityMeasurer.MeasureSimilarity(input, bestResult.Output) <= StringSimilarity.Medium
             ? bestResult.Output
             : input;
     }
