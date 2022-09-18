@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddBehaviors(this IServiceCollection services)
     {
         // Register behaviors manually to preserve their order
+        services.AddScoped<IBehavior, ErrorBehavior>();
         services.AddScoped<IBehavior, CommandBehavior>();
         services.AddScoped<IBehavior, MentionBehavior>();
         services.AddScoped<IBehavior, WrongKeyboardLayoutBehavior>();

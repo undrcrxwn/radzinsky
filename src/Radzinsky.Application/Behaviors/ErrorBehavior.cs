@@ -18,10 +18,6 @@ public class ErrorBehavior : IBehavior
         {
             Log.Error(e, "Behavior pipeline has thrown an exception");
             await context.ReplyAsync(context.Resources.Variants["SomethingWentWrong"].PickRandom());
-
-#if DEBUG
-            throw;
-#endif
         }
     }
 }

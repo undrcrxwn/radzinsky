@@ -3,6 +3,7 @@ using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Message = Radzinsky.Domain.Models.Message;
@@ -51,12 +52,20 @@ public class UpdateHandler : IUpdateHandler
 
         async Task RunNextBehaviorAsync(BehaviorContext context)
         {
+            var previousResources = context.Resources;
             if (enumerator.MoveNext())
             {
                 context.Resources =
                     _resources.GetBehaviorResources(enumerator.Current.GetType().FullName!);
                 
-                await enumerator.Current.HandleAsync(_behaviorContext, RunNextBehaviorAsync);
+                try
+                {
+                    await enumerator.Current.HandleAsync(context, RunNextBehaviorAsync);
+                }
+                finally
+                {
+                    context.Resources = previousResources;
+                }
             }
         }
     }
