@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Radzinsky.Application.Abstractions;
+﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Enumerations;
 using Radzinsky.Application.Models;
 
@@ -14,9 +13,6 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 
     private readonly IStringSimilarityMeasurer _similarityMeasurer;
     private readonly BigramFrequencies _frequencies;
-
-    private static readonly IDictionary<char, char> RussianToEnglishCharacters =
-        MapItems(RussianCharacters, EnglishCharacters);
 
     private static readonly IDictionary<char, char> EnglishToRussianCharacters =
         MapItems(EnglishCharacters, RussianCharacters);
@@ -34,32 +30,26 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
         if (input.Length < MinInputLength)
             return input;
 
-        var englishTranslation = TranslateByDictionary(input, RussianToEnglishCharacters);
         var russianTranslation = TranslateByDictionary(input, EnglishToRussianCharacters);
 
-        var combinations = new (string Input, IDictionary<string, double> Frequencies)[]
+        var combinations = new (string Output, IDictionary<string, double> Frequencies)[]
         {
             (input, _frequencies.EnglishBigramFrequencies),
             (input, _frequencies.RussianBigramFrequencies),
-
-            // (englishTranslation, _frequencies.EnglishBigramFrequencies),
-            // (englishTranslation, _frequencies.RussianBigramFrequencies),
-
-            // (russianTranslation, _frequencies.EnglishBigramFrequencies),
             (russianTranslation, _frequencies.RussianBigramFrequencies)
         };
 
         var scores = combinations.Select(x => new
         {
-            Input = x.Input,
-            Naturality = MeasureNaturalness(x.Input, x.Frequencies)
+            Output = x.Output,
+            Naturality = MeasureNaturalness(x.Output, x.Frequencies)
         });
 
         var bestResult = scores.MaxBy(x => x.Naturality);
 
         return bestResult.Naturality >= NaturalnessThreshold &&
-               _similarityMeasurer.MeasureSimilarity(input, bestResult.Input) <= StringSimilarity.Low
-            ? bestResult.Input
+               _similarityMeasurer.MeasureSimilarity(input, bestResult.Output) <= StringSimilarity.Low
+            ? bestResult.Output
             : input;
     }
 
@@ -84,6 +74,6 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
             return found ? translatedCharacter : originalCharacter;
         }));
 
-    private static IDictionary<T, T> MapItems<T>(IEnumerable<T> a, IEnumerable<T> b) =>
+    private static IDictionary<T1, T2> MapItems<T1, T2>(IEnumerable<T1> a, IEnumerable<T2> b) where T1 : notnull =>
         a.Zip(b).ToDictionary(x => x.First, x => x.Second);
 }
