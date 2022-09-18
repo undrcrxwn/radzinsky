@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IInteractionService, InteractionService>()
             .AddSingleton<ICommandsService, CommandsService>()
             .AddSingleton<IHolidaysService, HolidaysService>()
+            .AddSingleton<INewsService, PanoramaNewsService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
             .AddSingleton<ICalculator, Calculator>()
             .AddScoped<BehaviorContext>()
