@@ -8,6 +8,7 @@ namespace Radzinsky.Application.Models.Contexts;
 
 public class BehaviorContext : MessageContext
 {
+    public string BehaviorTypeName;
     public BehaviorResources? Resources;
 
     public BehaviorContext(
@@ -27,5 +28,5 @@ public class BehaviorContext : MessageContext
         bool? disableWebPagePreview = null,
         string? handlerTypeName = null) =>
         await base.ReplyAsync(text, parseMode, disableWebPagePreview,
-            handlerTypeName ?? Resources.BehaviorTypeName);
+            handlerTypeName ?? BehaviorTypeName);
 }

@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
@@ -11,7 +9,6 @@ namespace Radzinsky.Application.Behaviors;
 
 public class CommandBehavior : IBehavior
 {
-    private readonly IInteractionService _interaction;
     private readonly ICommandsService _commands;
     private readonly IResourcesService _resources;
     private readonly ILinguisticParser _parser;
@@ -19,14 +16,12 @@ public class CommandBehavior : IBehavior
     private readonly CommandContext _commandContext;
 
     public CommandBehavior(
-        IInteractionService interaction,
         ICommandsService commands,
         IResourcesService resources,
         ILinguisticParser parser,
         IServiceScopeFactory scopeFactory,
         CommandContext commandContext)
     {
-        _interaction = interaction;
         _commands = commands;
         _resources = resources;
         _parser = parser;
@@ -48,17 +43,15 @@ public class CommandBehavior : IBehavior
 
         if (_commandContext.Resources is null)
         {
-            context.ReplyAsync(context.Resources.Variants["CannotUnderstandYou"].PickRandom());
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotUnderstandYou"));
             return;
         }
         
         context.ResetCheckpoint();
 
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var command = _commands.GetCommandInstance(scope, _commandContext.Resources.CommandTypeName);
-            await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
-        }
+        using var scope = _scopeFactory.CreateScope();
+        var command = _commands.GetCommandInstance(scope, _commandContext.CommandTypeName);
+        await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
     }
 
     private bool FillCommandContext(CommandContext commandContext, BehaviorContext behaviorContext)
@@ -104,7 +97,8 @@ public class CommandBehavior : IBehavior
             return true;
         }
 
-        commandContext.Resources = _resources.GetCommandResourcesByAlias(alias.Case);
+        commandContext.CommandTypeName = _commands.GetCommandTypeNameByAlias(alias.Case);
+        commandContext.Resources = _resources.GetCommandResources(commandContext.CommandTypeName);
         commandContext.Payload = commandContext.Payload[alias.Segment.Length..].TrimStart();
 
         return true;

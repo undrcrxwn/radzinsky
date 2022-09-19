@@ -8,13 +8,12 @@ namespace Radzinsky.Application.Models.Contexts;
 
 public class CommandContext : MessageContext
 {
+    public string CommandTypeName;
     public CommandResources? Resources;
     public string Payload;
 
-    private readonly IInteractionService _interaction;
-
     public CommandContext(ITelegramBotClient bot, IInteractionService interaction)
-        : base(bot, interaction) => _interaction = interaction;
+        : base(bot, interaction) { }
 
     public override async Task<int> ReplyAsync(
         string text,
@@ -22,18 +21,19 @@ public class CommandContext : MessageContext
         bool? disableWebPagePreview = null,
         string? handlerTypeName = null) =>
         await base.ReplyAsync(text, parseMode, disableWebPagePreview,
-            handlerTypeName ?? Resources.CommandTypeName);
+            handlerTypeName ?? CommandTypeName);
 
     public Checkpoint SetCommandCheckpoint(string name)
     {
-        Checkpoint = _interaction.IssueCheckpoint(name, Resources.CommandTypeName, Message.Sender.Id);
+        Checkpoint = _interaction.IssueCheckpoint(name, CommandTypeName, Message.Sender.Id);
         return Checkpoint;
     }
 
     public async Task DeletePreviousReplyAsync()
     {
         var messageId = await _interaction.TryGetPreviousReplyMessageIdAsync(
-            Resources.CommandTypeName, Message.Chat.Id);
+            CommandTypeName, Message.Chat.Id);
+        
         if (messageId is not null)
             await DeleteMessageAsync(messageId.Value);
     }

@@ -1,9 +1,12 @@
-﻿namespace Radzinsky.Application.Models.Resources;
+﻿using Newtonsoft.Json.Linq;
 
-public class CommandResources
+namespace Radzinsky.Application.Models.Resources;
+
+public class CommandResources : Resources
 {
-    public string CommandTypeName;
-    public IEnumerable<string> Aliases = Enumerable.Empty<string>();
-    public IDictionary<string, IEnumerable<string>> Variants =
-        new Dictionary<string, IEnumerable<string>>();
+    public CommandResources(JObject data)
+        : base(data) { }
+
+    public IEnumerable<string> Aliases =>
+        GetMany<string>("Aliases");
 }

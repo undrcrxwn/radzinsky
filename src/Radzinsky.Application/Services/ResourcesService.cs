@@ -6,12 +6,12 @@ namespace Radzinsky.Application.Services;
 
 public class ResourcesService : IResourcesService
 {
-    private readonly IEnumerable<BehaviorResources> _behaviorResources;
-    private readonly IEnumerable<CommandResources> _commandResources;
+    private readonly IDictionary<string, BehaviorResources> _behaviorResources;
+    private readonly IDictionary<string, CommandResources> _commandResources;
 
     public ResourcesService(
-        IEnumerable<BehaviorResources> behaviorResources,
-        IEnumerable<CommandResources> commandResources)
+        IDictionary<string, BehaviorResources> behaviorResources,
+        IDictionary<string, CommandResources> commandResources)
     {
         _behaviorResources = behaviorResources;
         _commandResources = commandResources;
@@ -20,12 +20,15 @@ public class ResourcesService : IResourcesService
     public CommandResources? GetCommandResources<TCommand>() where TCommand : ICommand =>
         GetCommandResources(typeof(TCommand).FullName);
 
-    public CommandResources? GetCommandResources(string commandTypeName) =>
-        _commandResources.FirstOrDefault(x => x.CommandTypeName == commandTypeName);
+    public CommandResources? GetCommandResources(string commandTypeName)
+    {
+        var found = _commandResources.TryGetValue(commandTypeName, out var resources);
+        return found ? resources : null;
+    }
 
-    public CommandResources? GetCommandResourcesByAlias(string alias) =>
-        _commandResources.FirstOrDefault(x => x.Aliases.Contains(alias));
-
-    public BehaviorResources? GetBehaviorResources(string behaviorTypeName) =>
-        _behaviorResources.FirstOrDefault(x => x.BehaviorTypeName == behaviorTypeName);
+    public BehaviorResources? GetBehaviorResources(string behaviorTypeName)
+    {
+        var found = _behaviorResources.TryGetValue(behaviorTypeName, out var resources);
+        return found ? resources : null;
+    }
 }

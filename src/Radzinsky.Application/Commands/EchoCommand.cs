@@ -9,6 +9,6 @@ public class EchoCommand : ICommand
 {
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken) =>
         await context.ReplyAsync(string.IsNullOrWhiteSpace(context.Payload)
-            ? context.Resources.Variants["NoPayload"].PickRandom()
+            ? context.Resources.GetRandom<string>("NoPayload")
             : context.Payload);
 }

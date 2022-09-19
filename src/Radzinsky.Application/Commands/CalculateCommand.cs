@@ -19,13 +19,13 @@ public class CalculateCommand : ICommand
             string.IsNullOrWhiteSpace(context.Payload))
         {
             context.SetCommandCheckpoint("WaitingForExpression");
-            await context.ReplyAsync(context.Resources.Variants["GiveMeExpression"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("GiveMeExpression"));
             return;
         }
 
         if (!_calculator.CanCalculate(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.Variants["InvalidSyntax"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("InvalidSyntax"));
             return;
         }
 

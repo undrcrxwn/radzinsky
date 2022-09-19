@@ -1,8 +1,9 @@
-﻿namespace Radzinsky.Application.Models.Resources;
+﻿using Newtonsoft.Json.Linq;
 
-public class BehaviorResources
+namespace Radzinsky.Application.Models.Resources;
+
+public class BehaviorResources : Resources
 {
-    public string BehaviorTypeName;
-    public IDictionary<string, IEnumerable<string>> Variants =
-        new Dictionary<string, IEnumerable<string>>();
+    public BehaviorResources(JObject data)
+        : base(data) { }
 }

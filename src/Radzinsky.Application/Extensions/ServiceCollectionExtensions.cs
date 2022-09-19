@@ -7,6 +7,7 @@ using Mapster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Behaviors;
 using Radzinsky.Application.Models;
@@ -20,20 +21,20 @@ namespace Radzinsky.Application.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    private const string CommandResourcesPath = "Resources/commands.json";
-    private const string BehaviorResourcesPath = "Resources/behaviors.json";
     private const string CommonResourcesPath = "Resources/common.json";
-    private const string RussianBigramFrequenciesPath = "Resources/russian_bigram_frequencies.csv";
-    private const string EnglishBigramFrequenciesPath = "Resources/english_bigram_frequencies.csv";
+    private const string CommandResourcesPathTemplate = "Resources/Commands/{0}.json";
+    private const string BehaviorResourcesPathTemplate = "Resources/Behaviors/{0}.json";
+    private const string RussianBigramFrequenciesPath = "Resources/Linguistic/russian_bigram_frequencies.csv";
+    private const string EnglishBigramFrequenciesPath = "Resources/Linguistic/english_bigram_frequencies.csv";
 
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration) =>
         services
             .AddMemoryCache()
             .AddMapsterConfiguration()
             .AddHangfire(configuration)
-            .AddCommands()
-            .AddBehaviors()
-            .AddResources()
+            .AddBehaviorsAndResources()
+            .AddCommandsAndResources()
+            .AddCommonResources()
             .AddLinguisticParsing()
             .AddBigramFrequencies()
             .AddScoped<IUpdateHandler, UpdateHandler>()
@@ -62,57 +63,80 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddBehaviors(this IServiceCollection services)
+    private static IServiceCollection AddBehaviorsAndResources(this IServiceCollection services)
     {
         // Register behaviors manually to preserve their order
-        services.AddScoped<IBehavior, ErrorBehavior>();
-        services.AddScoped<IBehavior, CommandBehavior>();
-        services.AddScoped<IBehavior, MentionBehavior>();
-        services.AddScoped<IBehavior, WrongKeyboardLayoutBehavior>();
+        var implementations = new[]
+        {
+            typeof(ErrorBehavior),
+            typeof(CommandBehavior),
+            typeof(MentionBehavior),
+            typeof(WrongKeyboardLayoutBehavior)
+        };
+
+        foreach (var implementation in implementations)
+            services.AddScoped(typeof(IBehavior), implementation);
 
         var behaviorTypes = GetImplementationsOf<IBehavior>();
-
         foreach (var behaviorType in behaviorTypes)
         {
-            if (!services.Any(x => x.ImplementationType == behaviorType))
+            if (services.All(x => x.ImplementationType != behaviorType))
                 Log.Warning("Behavior of type {0} is not registered", behaviorType.FullName);
         }
 
-        return services;
+        return services.AddBehaviorResources(implementations.Select(x => x.FullName));
     }
 
-    private static IServiceCollection AddCommands(this IServiceCollection services)
+    private static IServiceCollection AddCommandsAndResources(this IServiceCollection services)
     {
         var commandTypes = GetImplementationsOf<ICommand>();
-
         foreach (var commandType in commandTypes)
         {
             Log.Information("Registering command of type {0}", commandType.FullName);
             services.AddScoped(commandType);
         }
 
-        return services;
+        return services.AddCommandResources(commandTypes.Select(x => x.FullName));
     }
 
-    private static IServiceCollection AddResources(this IServiceCollection services) => services
-        .AddBehaviorResources()
-        .AddCommandResources()
-        .AddCommonResources();
-    
-    private static IServiceCollection AddCommandResources(this IServiceCollection services) =>
-        services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<CommandResources>>(CommandResourcesPath));
+    private static IServiceCollection AddCommandResources(
+        this IServiceCollection services, IEnumerable<string> commandTypeNames)
+    {
+        var resourceMap = commandTypeNames.ToDictionary(
+            commandTypeName => commandTypeName, commandTypeName =>
+            {
+                var path = string.Format(
+                    CommandResourcesPathTemplate, commandTypeName.Split('.').Last());
 
-    private static IServiceCollection AddBehaviorResources(this IServiceCollection services) =>
-        services.AddSingleton(DeserializeFromRelativeLocation<IEnumerable<BehaviorResources>>(BehaviorResourcesPath));
+                return new CommandResources(ParseJObjectFromRelativeLocation(path));
+            });
+
+        return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap);
+    }
+
+    private static IServiceCollection AddBehaviorResources(
+        this IServiceCollection services, IEnumerable<string> behaviorTypeNames)
+    {
+        var resourceMap = behaviorTypeNames.ToDictionary(
+            behaviorTypeName => behaviorTypeName, behaviorTypeName =>
+            {
+                var path = string.Format(
+                    BehaviorResourcesPathTemplate, behaviorTypeName.Split('.').Last());
+
+                return new BehaviorResources(ParseJObjectFromRelativeLocation(path));
+            });
+
+        return services.AddSingleton<IDictionary<string, BehaviorResources>>(resourceMap);
+    }
 
     private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
-        services.AddSingleton(DeserializeFromRelativeLocation<CommonResources>(CommonResourcesPath));
+        services.AddSingleton(new CommonResources(ParseJObjectFromRelativeLocation(CommonResourcesPath)));
 
-    private static T DeserializeFromRelativeLocation<T>(string relativePath)
+    private static JObject ParseJObjectFromRelativeLocation(string relativePath)
     {
         var absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
         var json = File.ReadAllText(absolutePath);
-        return JsonConvert.DeserializeObject<T>(json);
+        return JObject.Parse(json);
     }
 
     private static IServiceCollection AddLinguisticParsing(this IServiceCollection services) => services

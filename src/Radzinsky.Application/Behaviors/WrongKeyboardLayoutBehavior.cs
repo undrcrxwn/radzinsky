@@ -16,7 +16,7 @@ public class WrongKeyboardLayoutBehavior : IBehavior
             return;
         }
 
-        var template = context.Resources.Variants["ProbablyMeant"].PickRandom();
+        var template = context.Resources.GetRandom<string>("ProbablyMeant");
         var response = string.Format(template, context.Message.Sender.FirstName, context.Message.NormalizedText);
         context.ReplyAsync(response);
     }

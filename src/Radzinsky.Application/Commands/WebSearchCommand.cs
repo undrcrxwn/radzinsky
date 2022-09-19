@@ -21,7 +21,7 @@ public class WebSearchCommand : ICommand
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.Variants["SearchWhat"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("SearchWhat"));
             context.SetCommandCheckpoint("SearchWhat");
             return;
         }
@@ -44,13 +44,13 @@ public class WebSearchCommand : ICommand
         // Append "nothing found" answer
         var somethingFound = results.Any();
         if (!somethingFound)
-            stringBuilder.Append(context.Resources.Variants["NothingFound"].PickRandom() + " ");
+            stringBuilder.Append(context.Resources.GetRandom<string>("NothingFound") + " ");
 
         // Append web search request URL
         stringBuilder.Append($"<a href=\"{url}\">");
         stringBuilder.Append(somethingFound
-            ? context.Resources.Variants["WatchAllResults"].PickRandom()
-            : context.Resources.Variants["TryYourself"].PickRandom());
+            ? context.Resources.GetRandom<string>("WatchAllResults")
+            : context.Resources.GetRandom<string>("TryYourself"));
         stringBuilder.Append("</a>");
 
         var text = stringBuilder.ToString();

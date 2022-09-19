@@ -1,5 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -12,7 +11,7 @@ public class BanCommand : ICommand
     {
         if (context.Message.ReplyTarget is null)
         {
-            await context.ReplyAsync(context.Resources.Variants["NoReplyTarget"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("NoReplyTarget"));
             return;
         }
 
@@ -24,27 +23,28 @@ public class BanCommand : ICommand
 
         if (context.Message.ReplyTarget.Sender.Id == context.Bot.BotId)
         {
-            await context.ReplyAsync(context.Resources.Variants["CannotBanMe"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("CannotBanMe"));
             return;
         }
         
         if (sender.Status is not ChatMemberStatus.Creator and not ChatMemberStatus.Administrator)
         {
-            await context.ReplyAsync(context.Resources.Variants["NotAnAdmin"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("NotAnAdmin"));
             return;
         }
 
         if (target.Status is ChatMemberStatus.Creator or ChatMemberStatus.Administrator)
         {
-            await context.ReplyAsync(context.Resources.Variants["CannotBanAdmin"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("CannotBanAdmin"));
             return;
         }
 
         await context.Bot.BanChatMemberAsync(
             context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
 
-        var responseTemplate = context.Resources.Variants["UserBanned"].PickRandom();
-        var response = string.Format(responseTemplate, context.Message.ReplyTarget.Sender.FirstName);
+        var response = context.Resources.GetRandom(
+            "UserBanned", context.Message.ReplyTarget.Sender.FirstName);
+        
         await context.ReplyAsync(response);
     }
 }

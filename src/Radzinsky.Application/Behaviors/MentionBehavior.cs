@@ -1,6 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Behaviors;
@@ -23,6 +22,6 @@ public class MentionBehavior : IBehavior
         }
 
         context.SetMentionCheckpoint();
-        await context.ReplyAsync(context.Resources.Variants["AtYourService"].PickRandom());
+        await context.ReplyAsync(context.Resources.GetRandom<string>("AtYourService"));
     }
 }

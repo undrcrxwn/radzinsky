@@ -1,6 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Domain.Models;
 using Radzinsky.Persistence;
@@ -20,7 +18,7 @@ public class EditBioCommand : ICommand
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.Variants["TellBio"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("TellBio"));
             context.SetCommandCheckpoint("TellBio");
             return;
         }
@@ -42,7 +40,6 @@ public class EditBioCommand : ICommand
         }
 
         await _dbContext.SaveChangesAsync();
-
-        await context.ReplyAsync(context.Resources.Variants["BioChanged"].PickRandom());
+        await context.ReplyAsync(context.Resources.GetRandom<string>("BioChanged"));
     }
 }

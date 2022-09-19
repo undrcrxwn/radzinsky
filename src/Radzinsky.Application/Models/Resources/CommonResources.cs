@@ -1,6 +1,9 @@
-﻿namespace Radzinsky.Application.Models.Resources;
+﻿using Newtonsoft.Json.Linq;
 
-public class CommonResources
+namespace Radzinsky.Application.Models.Resources;
+
+public class CommonResources : Resources
 {
-    public IEnumerable<string> Mentions;
+    public CommonResources(JObject data)
+        : base(data) { }
 }

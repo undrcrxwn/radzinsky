@@ -1,6 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Persistence;
 
@@ -17,14 +15,14 @@ public class BioCommand : ICommand
     {
         if (context.Message.ReplyTarget is null)
         {
-            await context.ReplyAsync(context.Resources.Variants["NoTarget"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("NoTarget"));
             return;
         }
         
         var bio = await _dbContext.UserBios.FindAsync(context.Message.ReplyTarget.Sender.Id);
         if (bio is null)
         {
-            await context.ReplyAsync(context.Resources.Variants["NoBio"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("NoBio"));
             return;
         }
 

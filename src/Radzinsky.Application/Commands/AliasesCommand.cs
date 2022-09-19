@@ -1,6 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Models.Resources;
 
@@ -22,13 +20,13 @@ public class AliasesCommand : ICommand
         var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
         if (alias is null)
         {
-            await context.ReplyAsync(context.Resources.Variants["CommandNotFound"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("CommandNotFound"));
             return;
         }
 
         var aliases = _commands.First(x => x.Aliases.Contains(alias.Case)).Aliases;
         await context.ReplyAsync(aliases.Any()
-            ? String.Join('\n', aliases)
-            : context.Resources.Variants["SingleAlias"].PickRandom());
+            ? string.Join('\n', aliases)
+            : context.Resources.GetRandom<string>("SingleAlias"));
     }
 }

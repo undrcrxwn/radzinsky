@@ -1,6 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
 
@@ -17,7 +16,7 @@ public class ErrorBehavior : IBehavior
         catch (Exception e)
         {
             Log.Error(e, "Behavior pipeline has thrown an exception");
-            await context.ReplyAsync(context.Resources.Variants["SomethingWentWrong"].PickRandom());
+            await context.ReplyAsync(context.Resources.GetRandom<string>("SomethingWentWrong"));
         }
     }
 }
