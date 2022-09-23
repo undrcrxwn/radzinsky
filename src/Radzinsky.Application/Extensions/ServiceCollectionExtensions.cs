@@ -69,9 +69,11 @@ public static class ServiceCollectionExtensions
         var implementations = new[]
         {
             typeof(ErrorBehavior),
-            typeof(CommandBehavior),
+            typeof(SlashCommandBehavior),
+            typeof(LinguisticCommandBehavior),
             typeof(MentionBehavior),
-            typeof(WrongKeyboardLayoutBehavior)
+            typeof(WrongKeyboardLayoutBehavior),
+            typeof(MisunderstandingBehavior)
         };
 
         foreach (var implementation in implementations)
@@ -80,7 +82,7 @@ public static class ServiceCollectionExtensions
         var behaviorTypes = GetImplementationsOf<IBehavior>();
         foreach (var behaviorType in behaviorTypes)
         {
-            if (services.All(x => x.ImplementationType != behaviorType))
+            if (!behaviorType.IsAbstract && services.All(x => x.ImplementationType != behaviorType))
                 Log.Warning("Behavior of type {0} is not registered", behaviorType.FullName);
         }
 
@@ -108,7 +110,10 @@ public static class ServiceCollectionExtensions
                 var path = string.Format(
                     CommandResourcesPathTemplate, commandTypeName.Split('.').Last());
 
-                return new CommandResources(ParseJObjectFromRelativeLocation(path));
+                var data = ParseJObjectFromRelativeLocation(path);
+                return data is not null
+                    ? new CommandResources(ParseJObjectFromRelativeLocation(path))
+                    : null;
             });
 
         return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap);
@@ -123,18 +128,25 @@ public static class ServiceCollectionExtensions
                 var path = string.Format(
                     BehaviorResourcesPathTemplate, behaviorTypeName.Split('.').Last());
 
-                return new BehaviorResources(ParseJObjectFromRelativeLocation(path));
+                var data = ParseJObjectFromRelativeLocation(path);
+                return data is not null
+                    ? new BehaviorResources(data)
+                    : null;
             });
 
-        return services.AddSingleton<IDictionary<string, BehaviorResources>>(resourceMap);
+        return services.AddSingleton<IDictionary<string, BehaviorResources?>>(resourceMap);
     }
 
     private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
         services.AddSingleton(new CommonResources(ParseJObjectFromRelativeLocation(CommonResourcesPath)));
 
-    private static JObject ParseJObjectFromRelativeLocation(string relativePath)
+    private static JObject? ParseJObjectFromRelativeLocation(string relativePath)
     {
         var absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativePath);
+
+        if (!File.Exists(absolutePath))
+            return null;
+
         var json = File.ReadAllText(absolutePath);
         return JObject.Parse(json);
     }

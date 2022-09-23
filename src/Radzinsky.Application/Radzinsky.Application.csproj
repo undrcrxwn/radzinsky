@@ -76,9 +76,6 @@
       <None Update="Resources\Commands\WebSearchCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Resources\Behaviors\CommandBehavior.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
       <None Update="Resources\Behaviors\ErrorBehavior.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -86,6 +83,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Resources\Behaviors\WrongKeyboardLayoutBehavior.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Commands\StartCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

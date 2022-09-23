@@ -24,6 +24,9 @@ public class Resources
     public IEnumerable<T> GetMany<T>(string key) =>
         Data.GetValue(key).Values<T>();
     
+    public IEnumerable<T> GetManyOrEmpty<T>(string key) =>
+        Data.GetValue(key)?.Values<T>() ?? Enumerable.Empty<T>();
+    
     public string Get(string key, params object[] args) =>
         string.Format(CultureInfo.InvariantCulture, Get<string>(key), args);
     

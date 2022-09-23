@@ -8,5 +8,8 @@ public class CommandResources : Resources
         : base(data) { }
 
     public IEnumerable<string> Aliases =>
-        GetMany<string>("Aliases");
+        GetManyOrEmpty<string>("Aliases");
+    
+    public IEnumerable<string> Slashes =>
+        GetManyOrEmpty<string>("Slashes");
 }

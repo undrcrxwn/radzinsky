@@ -17,6 +17,9 @@ public class CommandsService : ICommandsService
         return (ICommand)scope.ServiceProvider.GetRequiredService(commandType);
     }
 
-    public string GetCommandTypeNameByAlias(string alias) =>
-        _commandResources.First(x => x.Value.Aliases.Contains(alias)).Key;
+    public string? GetCommandTypeNameByAlias(string alias) =>
+        _commandResources.FirstOrDefault(x => x.Value.Aliases.Contains(alias)).Key;
+
+    public string? GetCommandTypeNameBySlash(string slash) =>
+        _commandResources.FirstOrDefault(x => x.Value.Slashes.Contains(slash.TrimStart('/'))).Key;
 }

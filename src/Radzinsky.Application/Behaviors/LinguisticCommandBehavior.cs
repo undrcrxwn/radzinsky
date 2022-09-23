@@ -1,65 +1,35 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Delegates;
+using Radzinsky.Application.Behaviors.Base;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
 
 namespace Radzinsky.Application.Behaviors;
 
-public class CommandBehavior : IBehavior
+public class LinguisticCommandBehavior : CommandBehaviorBase
 {
+    private readonly ILinguisticParser _parser;
     private readonly ICommandsService _commands;
     private readonly IResourcesService _resources;
-    private readonly ILinguisticParser _parser;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly CommandContext _commandContext;
 
-    public CommandBehavior(
+    public LinguisticCommandBehavior(
+        ILinguisticParser parser,
         ICommandsService commands,
         IResourcesService resources,
-        ILinguisticParser parser,
         IServiceScopeFactory scopeFactory,
         CommandContext commandContext)
+        : base(commands, resources, scopeFactory, commandContext)
     {
+        _parser = parser;
         _commands = commands;
         _resources = resources;
-        _parser = parser;
-        _scopeFactory = scopeFactory;
-        _commandContext = commandContext;
     }
 
-    public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
+    protected override bool FillCommandContext(CommandContext commandContext, BehaviorContext behaviorContext)
     {
-        // Fill command context
-        var considerCommand = FillCommandContext(_commandContext, context);
-
-        // Find and execute command if possible
-        if (!considerCommand)
-        {
-            await next(context);
-            return;
-        }
-
-        if (_commandContext.Resources is null)
-        {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotUnderstandYou"));
-            return;
-        }
-        
-        context.ResetCheckpoint();
-
-        using var scope = _scopeFactory.CreateScope();
-        var command = _commands.GetCommandInstance(scope, _commandContext.CommandTypeName);
-        await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
-    }
-
-    private bool FillCommandContext(CommandContext commandContext, BehaviorContext behaviorContext)
-    {
-        commandContext.Message = behaviorContext.Message;
-        commandContext.Checkpoint = behaviorContext.Checkpoint;
         commandContext.Payload = commandContext.Message.NormalizedText;
-
+        
         // Extract command from checkpoint if possible
         if (commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
@@ -100,7 +70,6 @@ public class CommandBehavior : IBehavior
         commandContext.CommandTypeName = _commands.GetCommandTypeNameByAlias(alias.Case);
         commandContext.Resources = _resources.GetCommandResources(commandContext.CommandTypeName);
         commandContext.Payload = commandContext.Payload[alias.Segment.Length..].TrimStart();
-
         return true;
     }
 }
