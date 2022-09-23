@@ -14,5 +14,5 @@ That one single Telegram bot to replace all the others
 - [`Radzinsy.Persistence`](src/Radzinsky.Persistence) — persistence layer containing database contexts and migrations
 
 ### Useful links
-- [Radzinsky](t.me/radzinsky_bot) — the bot
-- [gгёzы](t.me/undrcrxwn) — developer
+- [Radzinsky](https://t.me/radzinsky_bot) — the bot
+- [gгёzы](https://t.me/undrcrxwn) — developer
