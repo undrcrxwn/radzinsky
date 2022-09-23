@@ -1,5 +1,6 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Behaviors;
@@ -8,7 +9,15 @@ public class MisunderstandingBehavior : IBehavior
 {
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
-        await context.ReplyAsync(context.Resources.GetRandom("CannotUnderstandYou"));
+        if (context.Message.IsPrivate ||
+            context.Message.IsReplyToMe ||
+            context.Message.StartsWithMyName ||
+            context.Checkpoint is MentionCheckpoint)
+        {
+            await context.ReplyAsync(context.Resources.GetRandom("CannotUnderstandYou"));
+            return;
+        }
+
         await next(context);
     }
 }

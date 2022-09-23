@@ -10,4 +10,5 @@ public class Message
     public Message? ReplyTarget { get; set; }
     public bool IsReplyToMe { get; set; }
     public bool IsPrivate { get; set; }
+    public bool StartsWithMyName { get; set; }
 }

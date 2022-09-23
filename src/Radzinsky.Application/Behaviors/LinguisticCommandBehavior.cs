@@ -52,10 +52,6 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
         if (mention is not null)
             commandContext.Payload = commandContext.Payload[mention.Segment.Length..].TrimStart();
 
-        // Reset mention checkpoint
-        if (commandContext.Checkpoint is MentionCheckpoint)
-            commandContext.ResetCheckpoint();
-
         if (string.IsNullOrWhiteSpace(commandContext.Payload))
             return false;
 

@@ -1,9 +1,7 @@
 ﻿using Mapster;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Message = Radzinsky.Domain.Models.Message;
@@ -16,6 +14,7 @@ public class UpdateHandler : IUpdateHandler
     private readonly IResourcesService _resources;
     private readonly IInteractionService _interaction;
     private readonly IKeyboardLayoutTranslator _keyboardLayoutTranslator;
+    private readonly ILinguisticParser _parser;
     private readonly BehaviorContext _behaviorContext;
 
     public UpdateHandler(
@@ -23,12 +22,14 @@ public class UpdateHandler : IUpdateHandler
         IResourcesService resources,
         IInteractionService interaction,
         IKeyboardLayoutTranslator keyboardLayoutTranslator,
+        ILinguisticParser parser,
         BehaviorContext behaviorContext)
     {
         _behaviors = behaviors;
         _resources = resources;
         _interaction = interaction;
         _keyboardLayoutTranslator = keyboardLayoutTranslator;
+        _parser = parser;
         _behaviorContext = behaviorContext;
     }
 
@@ -54,15 +55,15 @@ public class UpdateHandler : IUpdateHandler
         {
             var previousBehaviorTypeName = context.BehaviorTypeName;
             var previousResources = context.Resources;
-            
+
             if (enumerator.MoveNext())
             {
                 context.BehaviorTypeName = enumerator.Current.GetType().FullName!;
                 context.Resources =
                     _resources.GetBehaviorResources(context.BehaviorTypeName);
-                
+
                 Log.Debug("Entering behavior {0}", context.BehaviorTypeName);
-                
+
                 try
                 {
                     await enumerator.Current.HandleAsync(context, RunNextBehaviorAsync);
@@ -70,7 +71,7 @@ public class UpdateHandler : IUpdateHandler
                 finally
                 {
                     Log.Debug("Leaving behavior {0}", context.BehaviorTypeName);
-                    
+
                     context.BehaviorTypeName = previousBehaviorTypeName;
                     context.Resources = previousResources;
                 }
@@ -84,6 +85,8 @@ public class UpdateHandler : IUpdateHandler
         context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);
         context.Message.IsReplyToMe = context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId;
         context.Message.IsPrivate = message.Chat.Type == ChatType.Private;
+        context.Message.StartsWithMyName =
+            _parser.TryParseMentionFromBeginning(context.Message.NormalizedText) is not null;
         context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender.Id);
     }
 }

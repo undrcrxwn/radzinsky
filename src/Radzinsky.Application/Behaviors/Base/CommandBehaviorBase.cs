@@ -30,7 +30,7 @@ public abstract class CommandBehaviorBase : IBehavior
         // Fill command context
         _commandContext.Message = context.Message;
         _commandContext.Checkpoint = context.Checkpoint;
-        
+
         // Extract command from checkpoint if possible
         if (_commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
@@ -48,8 +48,9 @@ public abstract class CommandBehaviorBase : IBehavior
             }
         }
         
-        context.ResetCheckpoint();
-
+        if (context.Checkpoint is MentionCheckpoint)
+            context.ResetCheckpoint();
+        
         using var scope = _scopeFactory.CreateScope();
         var command = _commands.GetCommandInstance(scope, _commandContext.CommandTypeName);
         await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
