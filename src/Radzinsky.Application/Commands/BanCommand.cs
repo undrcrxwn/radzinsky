@@ -9,6 +9,18 @@ public class BanCommand : ICommand
 {
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
+        if (context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId)
+        {
+            await context.ReplyAsync(context.Resources.GetRandom<string>("CannotBanMe"));
+            return;
+        }
+        
+        if (context.Message.IsPrivate)
+        {
+            await context.ReplyAsync(context.Resources.GetRandom<string>("CannotBanInPrivateChat"));
+            return;
+        }
+        
         if (context.Message.ReplyTarget is null)
         {
             await context.ReplyAsync(context.Resources.GetRandom<string>("NoReplyTarget"));
@@ -21,12 +33,6 @@ public class BanCommand : ICommand
         var target = await context.Bot.GetChatMemberAsync(
             context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
 
-        if (context.Message.ReplyTarget.Sender.Id == context.Bot.BotId)
-        {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("CannotBanMe"));
-            return;
-        }
-        
         if (sender.Status is not ChatMemberStatus.Creator and not ChatMemberStatus.Administrator)
         {
             await context.ReplyAsync(context.Resources.GetRandom<string>("NotAnAdmin"));
