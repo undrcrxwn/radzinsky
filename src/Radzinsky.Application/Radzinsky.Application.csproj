@@ -88,6 +88,9 @@
       <None Update="Resources\Commands\StartCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Resources\Behaviors\MisunderstandingBehavior.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

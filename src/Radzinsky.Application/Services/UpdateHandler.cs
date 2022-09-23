@@ -52,11 +52,16 @@ public class UpdateHandler : IUpdateHandler
 
         async Task RunNextBehaviorAsync(BehaviorContext context)
         {
+            var previousBehaviorTypeName = context.BehaviorTypeName;
             var previousResources = context.Resources;
+            
             if (enumerator.MoveNext())
             {
+                context.BehaviorTypeName = enumerator.Current.GetType().FullName!;
                 context.Resources =
-                    _resources.GetBehaviorResources(enumerator.Current.GetType().FullName!);
+                    _resources.GetBehaviorResources(context.BehaviorTypeName);
+                
+                Log.Debug("Entering behavior {0}", context.BehaviorTypeName);
                 
                 try
                 {
@@ -64,6 +69,9 @@ public class UpdateHandler : IUpdateHandler
                 }
                 finally
                 {
+                    Log.Debug("Leaving behavior {0}", context.BehaviorTypeName);
+                    
+                    context.BehaviorTypeName = previousBehaviorTypeName;
                     context.Resources = previousResources;
                 }
             }
