@@ -2,6 +2,7 @@
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
 
@@ -17,7 +18,7 @@ public class WebSearchCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is not null)
+        if (context.Checkpoint is CommandCheckpoint)
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {

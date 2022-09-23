@@ -34,7 +34,9 @@ public abstract class CommandBehaviorBase : IBehavior
         // Extract command from checkpoint if possible
         if (_commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
         {
-            _commandContext.Resources = _resources.GetCommandResources(commandCheckpoint.CommandTypeName);
+            _commandContext.Payload = context.Message.NormalizedText;
+            _commandContext.CommandTypeName = commandCheckpoint.CommandTypeName;
+            _commandContext.Resources = _resources.GetCommandResources(_commandContext.CommandTypeName);
         }
         else
         {
