@@ -23,7 +23,7 @@ That one single Telegram bot to replace all the others
 1. Give this repo a star
 
 ### If using PM2
-- `pm start ngrok -- 8443` to start a tunnel
+- `pm2 start ngrok -- 8443` to start a tunnel
 - `curl http://localhost:4040/api/tunnels` to get the ngrok public URL
 
 ### Useful links
