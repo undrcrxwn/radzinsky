@@ -6,24 +6,29 @@ public class WebhookConfigurator : IHostedService
 {
     private readonly ILogger<WebhookConfigurator> _logger;
     private readonly IServiceProvider _services;
-    private readonly BotConfiguration _botConfig;
+    private readonly IConfiguration _configuration;
 
-    public WebhookConfigurator(ILogger<WebhookConfigurator> logger,
+    public WebhookConfigurator(
+        ILogger<WebhookConfigurator> logger,
         IServiceProvider serviceProvider,
         IConfiguration configuration)
     {
         _logger = logger;
         _services = serviceProvider;
-        _botConfig = configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+        _configuration = configuration;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-
-        var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
+        
+        var hostAddress = _configuration["HOST_ADDRESS"];
+        var token = _configuration["Telegram:BotApiToken"];
+        var webhookAddress = @$"{hostAddress}/bot/{token}";
+        
         _logger.LogInformation("Setting webhook: {0}", webhookAddress);
+        
         await botClient.SetWebhookAsync(
             url: webhookAddress,
             dropPendingUpdates: true,

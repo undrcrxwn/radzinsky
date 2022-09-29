@@ -1,7 +1,6 @@
 using Hangfire;
 using Hangfire.AspNetCore;
 using Radzinsky.Application.Extensions;
-using Radzinsky.Host;
 using Radzinsky.Host.Services;
 using Radzinsky.Persistence.Extensions;
 using Serilog;
@@ -16,12 +15,11 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/session.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
-var botConfig = builder.Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
-
 builder.Services.AddHostedService<WebhookConfigurator>();
 
+var token = builder.Configuration["Telegram:BotApiToken"];
 builder.Services.AddHttpClient("tgwebhook")
-    .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(botConfig.BotToken, client));
+    .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(token, client));
 
 builder.Services
     .AddApplication(builder.Configuration)
