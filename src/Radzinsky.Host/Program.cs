@@ -29,17 +29,9 @@ builder.Services
 
 var app = builder.Build();
 
+app.MapControllers();
 app.UseRouting();
 app.UseCors();
-
-app.UseEndpoints(endpoints =>
-{
-    var token = botConfig.BotToken;
-    endpoints.MapControllerRoute(
-        name: "tgwebhook", pattern: $"bot/{token}",
-        new { controller = "Webhook", action = "Post" });
-    endpoints.MapControllers();
-});
 
 var factory = app.Services.GetRequiredService<IServiceScopeFactory>();
 GlobalConfiguration.Configuration.UseActivator(

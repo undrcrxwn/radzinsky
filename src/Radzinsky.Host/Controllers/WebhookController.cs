@@ -5,10 +5,10 @@ using Telegram.Bot.Types;
 
 namespace Radzinsky.Host.Controllers;
 
-[ApiController, Route("[controller]")]
+[ApiController, Route("bot")]
 public class WebhookController : Controller
 {
-    [HttpPost]
+    [HttpPost("{token}")]
     public async Task<IActionResult> Post(
         [FromServices] IUpdateHandler updateHandler,
         [FromBody] Update update)
