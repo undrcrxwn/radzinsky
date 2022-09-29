@@ -5,9 +5,10 @@ using Telegram.Bot.Types;
 
 namespace Radzinsky.Host.Controllers;
 
-[ApiController]
+[ApiController, Route("[controller]")]
 public class WebhookController : Controller
 {
+    [HttpPost]
     public async Task<IActionResult> Post(
         [FromServices] IUpdateHandler updateHandler,
         [FromBody] Update update)
