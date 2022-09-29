@@ -15,7 +15,7 @@ That one single Telegram bot to replace all the others
 
 ### Launching
 1. Install [`ngrok`](https://ngrok.com/docs/getting-started)
-1. Start a tunnel using `ngrok http 8443`
+1. Start a forwarding tunnel using `ngrok http 8443`
 1. Copy the public ngrok URL you've got
 1. Paste it into the `BotConfiguration:HostAddress` field of [`appsettings.Production.json`](src/Radzinsky.Host/appsettings.Production.json)
 1. Fill the rest of configuration (e.g. `GoogleSearch:ApiKey` and so on)
