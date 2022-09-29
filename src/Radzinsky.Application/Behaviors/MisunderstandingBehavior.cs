@@ -14,6 +14,9 @@ public class MisunderstandingBehavior : IBehavior
             context.Message.StartsWithMyName ||
             context.Checkpoint is MentionCheckpoint)
         {
+            if (context.Checkpoint is MentionCheckpoint)
+                context.ResetCheckpoint();
+            
             await context.ReplyAsync(context.Resources.GetRandom("CannotUnderstandYou"));
             return;
         }

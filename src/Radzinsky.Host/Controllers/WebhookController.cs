@@ -9,7 +9,7 @@ namespace Radzinsky.Host.Controllers;
 public class WebhookController : Controller
 {
     [HttpPost("{token}")]
-    public async Task<IActionResult> Post(
+    public async Task<IActionResult> ReceiveUpdateAsync(
         [FromServices] IUpdateHandler updateHandler,
         [FromBody] Update update)
     {

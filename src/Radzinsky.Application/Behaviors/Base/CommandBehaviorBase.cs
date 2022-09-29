@@ -41,8 +41,6 @@ public abstract class CommandBehaviorBase : IBehavior
         else
         {
             var considerCommand = FillCommandContext(_commandContext, context);
-
-            // Find and execute command if possible
             if (!considerCommand || _commandContext.Resources is null)
             {
                 await next(context);
