@@ -11,7 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
 Log.Logger = new LoggerConfiguration()
+    .ReadFrom.AppSettings()
     .WriteTo.Console()
+    .WriteTo.File("logs/session.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 var botConfig = builder.Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
