@@ -1,5 +1,4 @@
 ﻿using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Host.Services;
 
@@ -27,7 +26,6 @@ public class WebhookConfigurator : IHostedService
         _logger.LogInformation("Setting webhook: {0}", webhookAddress);
         await botClient.SetWebhookAsync(
             url: webhookAddress,
-            allowedUpdates: Array.Empty<UpdateType>(),
             dropPendingUpdates: true,
             cancellationToken: cancellationToken);
     }
