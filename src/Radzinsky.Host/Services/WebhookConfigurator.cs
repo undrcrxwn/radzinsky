@@ -23,14 +23,14 @@ public class WebhookConfigurator : IHostedService
         using var scope = _services.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
         
-        var hostAddress = _configuration["HOST_ADDRESS"];
+        var host = _configuration["Telegram:WebhookHost"];
         var token = _configuration["Telegram:BotApiToken"];
-        var webhookAddress = @$"{hostAddress}/bot/{token}";
+        var webhookUrl = @$"{host}/bot/{token}";
         
-        _logger.LogInformation("Setting webhook: {0}", webhookAddress);
+        _logger.LogInformation("Setting webhook: {0}", webhookUrl);
         
         await botClient.SetWebhookAsync(
-            url: webhookAddress,
+            url: webhookUrl,
             dropPendingUpdates: true,
             cancellationToken: cancellationToken);
     }
