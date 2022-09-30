@@ -17,14 +17,15 @@ That one single Telegram bot to replace all the others
 1. Install [`ngrok`](https://ngrok.com/docs/getting-started)
 1. Start a forwarding tunnel using `ngrok http 8443`
 1. Copy the public ngrok URL you've got
-1. Paste it into the `BotConfiguration:HostAddress` field of [`appsettings.Production.json`](src/Radzinsky.Host/appsettings.Production.json)
-1. Fill the rest of configuration (e.g. `GoogleSearch:ApiKey` and so on)
+1. Paste it into the `Telegram:WebhookHost` field of `appsettings.Production.json`
+1. Fill the rest of `appsettings.Production.json` configuration (see [`appsettings.json`](src/Radzinsky.Host/appsettings.json))
 1. Run `dotnet run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
 1. Give this repo a star
 
 ### If using PM2
 - `pm2 start ngrok -- 8443` to start a tunnel
 - `curl http://localhost:4040/api/tunnels` to get the ngrok public URL
+- Running webhook host process: `pm2 start dotnet -- run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
 
 ### Useful links
 - [Radzinsky](https://t.me/radzinsky_bot) — the bot
