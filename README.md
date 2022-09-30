@@ -18,10 +18,10 @@ That one single Telegram bot to replace all the others
 1. Run a forwarding tunnel using `ngrok http 8443`
 1. Copy the public ngrok URL you've got
 1. Initialize [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for [Radzinsky.Host](src/Radzinsky.Host)
-3. Paste the copied ngrok public URL into the `Telegram:WebhookHost` field of the user secrets configuration
-4. Fill the rest of user secrets (see [appsettings.json](src/Radzinsky.Host/appsettings.json))
-5. Run `dotnet run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
-6. Give this repo a star
+1. Paste the copied ngrok public URL into the `Telegram:WebhookHost` field of the user secrets configuration
+1. Fill the rest of user secrets (see [appsettings.json](src/Radzinsky.Host/appsettings.json))
+1. Run `dotnet run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
+1. Give this repo a star
 
 ### If using [PM2](https://pm2.keymetrics.io)
 - `pm2 start ngrok -- 8443` to start a tunnel
@@ -30,4 +30,5 @@ That one single Telegram bot to replace all the others
 
 ### Useful links
 - [Radzinsky](https://t.me/radzinsky_bot) — the bot
+- [Radzinsky Community](https://t.me/radzinsky_chat) — community
 - [gгёzы](https://t.me/undrcrxwn) — developer
