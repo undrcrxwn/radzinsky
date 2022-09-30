@@ -14,7 +14,7 @@ That one single Telegram bot to replace all the others
 - [Radzinsy.Persistence](src/Radzinsky.Persistence) — persistence layer containing database contexts and migrations
 
 ### Launching
-1. Install [ngrok](https://ngrok.com/docs/getting-started)
+1. Install [ngrok](https://ngrok.com/docs/getting-started) (or use [localtunnel](https://loca.lt) instead)
 1. Run a forwarding tunnel using `ngrok http 8443`
 1. Copy the public ngrok URL you've got
 1. Initialize [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for [Radzinsky.Host](src/Radzinsky.Host)
