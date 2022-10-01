@@ -15,7 +15,8 @@ That one single Telegram bot to replace all the others
 
 ### Launching
 1. Install [ngrok](https://ngrok.com/docs/getting-started) (or use [localtunnel](https://loca.lt) instead)
-1. Run a forwarding tunnel using `ngrok http 8443`
+1. If using ngrok, consider [signing in via auth token](https://dashboard.ngrok.com/get-started/your-authtoken) to get unlimited lifetime for your tunnel
+1. Run a forwarding HTTP tunnel using `ngrok http 8443`
 1. Copy the public ngrok URL you've got
 1. Initialize [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for [Radzinsky.Host](src/Radzinsky.Host)
 1. Paste the copied ngrok public URL into the `Telegram:WebhookHost` field of the user secrets configuration
