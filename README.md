@@ -24,7 +24,7 @@ That one single Telegram bot to replace all the others
 1. Give this repo a star
 
 ### If using [PM2](https://pm2.keymetrics.io)
-- `pm2 start ngrok -- 8443` to start a tunnel
+- `pm2 start ngrok -- http 8443` to start a tunnel
 - `curl http://localhost:4040/api/tunnels` to get the ngrok public URL
 - Running webhook host process: `pm2 start dotnet -- run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
 
