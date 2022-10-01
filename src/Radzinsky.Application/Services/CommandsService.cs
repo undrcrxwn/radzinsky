@@ -7,7 +7,7 @@ namespace Radzinsky.Application.Services;
 public class CommandsService : ICommandsService
 {
     private readonly IDictionary<string, CommandResources> _commandResources;
-
+    
     public CommandsService(IDictionary<string, CommandResources> commandResources) =>
         _commandResources = commandResources;
 
