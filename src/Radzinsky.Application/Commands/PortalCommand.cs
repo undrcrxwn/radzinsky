@@ -7,6 +7,6 @@ public class PortalCommand : ICommand
 {
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        await context.ReplyAsync(context.Resources.GetRandom("Searching"));
+        await context.ReplyAsync(context.Resources!.GetRandom("Searching"));
     }
 }

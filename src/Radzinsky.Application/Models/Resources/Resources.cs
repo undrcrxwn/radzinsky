@@ -6,10 +6,10 @@ namespace Radzinsky.Application.Models.Resources;
 
 public class Resources
 {
-    private JObject Data;
+    private readonly JObject _data;
 
     public Resources(JObject data) =>
-        Data = data;
+        _data = data;
 
     public string GetRandom(string key, params object[] args) =>
         string.Format(CultureInfo.InvariantCulture, GetRandom<string>(key), args);
@@ -22,14 +22,14 @@ public class Resources
             .Select(x => string.Format(CultureInfo.InvariantCulture, x, args));
     
     public IEnumerable<T> GetMany<T>(string key) =>
-        Data.GetValue(key).Values<T>();
+        _data.GetValue(key)!.Values<T>()!;
     
-    public IEnumerable<T> GetManyOrEmpty<T>(string key) =>
-        Data.GetValue(key)?.Values<T>() ?? Enumerable.Empty<T>();
+    public IEnumerable<T?> GetManyOrEmpty<T>(string key) =>
+        _data.GetValue(key)?.Values<T>() ?? Enumerable.Empty<T>();
     
     public string Get(string key, params object[] args) =>
         string.Format(CultureInfo.InvariantCulture, Get<string>(key), args);
     
     public T Get<T>(string key) =>
-        Data.GetValue(key).Value<T>();
+        _data.GetValue(key)!.Value<T>()!;
 }

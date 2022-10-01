@@ -63,7 +63,7 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
             return true;
         }
 
-        commandContext.CommandTypeName = _commands.GetCommandTypeNameByAlias(alias.Case);
+        commandContext.CommandTypeName = _commands.GetCommandTypeNameByAlias(alias.Case)!;
         commandContext.Resources = _resources.GetCommandResources(commandContext.CommandTypeName);
         commandContext.Payload = commandContext.Payload[alias.Segment.Length..].TrimStart();
         return true;

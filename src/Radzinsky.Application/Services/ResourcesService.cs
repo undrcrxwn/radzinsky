@@ -1,5 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Resources;
 
 namespace Radzinsky.Application.Services;
@@ -18,7 +17,7 @@ public class ResourcesService : IResourcesService
     }
 
     public CommandResources? GetCommandResources<TCommand>() where TCommand : ICommand =>
-        GetCommandResources(typeof(TCommand).FullName);
+        GetCommandResources(typeof(TCommand).FullName!);
 
     public CommandResources? GetCommandResources(string commandTypeName)
     {
@@ -28,7 +27,7 @@ public class ResourcesService : IResourcesService
 
     public BehaviorResources? GetBehaviorResources(string behaviorTypeName)
     {
-        var found = _behaviorResources.TryGetValue(behaviorTypeName, out var resources);
-        return found ? resources : null;
+        _behaviorResources.TryGetValue(behaviorTypeName, out var resources);
+        return resources;
     }
 }

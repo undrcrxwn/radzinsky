@@ -1,7 +1,6 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
@@ -11,18 +10,18 @@ namespace Radzinsky.Application.Commands;
 public class WebSearchCommand : ICommand
 {
     private readonly IWebSearchService _webSearch;
-    private readonly IInteractionService _interaction;
 
     public WebSearchCommand(IWebSearchService webSearch) =>
         _webSearch = webSearch;
 
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         if (context.Checkpoint is CommandCheckpoint)
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("SearchWhat"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("SearchWhat"));
             context.SetCommandCheckpoint("SearchWhat");
             return;
         }
@@ -45,13 +44,13 @@ public class WebSearchCommand : ICommand
         // Append "nothing found" answer
         var somethingFound = results.Any();
         if (!somethingFound)
-            stringBuilder.Append(context.Resources.GetRandom<string>("NothingFound") + " ");
+            stringBuilder.Append(context.Resources!.GetRandom<string>("NothingFound") + " ");
 
         // Append web search request URL
         stringBuilder.Append($"<a href=\"{url}\">");
         stringBuilder.Append(somethingFound
-            ? context.Resources.GetRandom<string>("WatchAllResults")
-            : context.Resources.GetRandom<string>("TryYourself"));
+            ? context.Resources!.GetRandom<string>("WatchAllResults")
+            : context.Resources!.GetRandom<string>("TryYourself"));
         stringBuilder.Append("</a>");
 
         var text = stringBuilder.ToString();

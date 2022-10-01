@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 
@@ -19,13 +18,13 @@ public class CalculateCommand : ICommand
             string.IsNullOrWhiteSpace(context.Payload))
         {
             context.SetCommandCheckpoint("WaitingForExpression");
-            await context.ReplyAsync(context.Resources.GetRandom<string>("GiveMeExpression"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
             return;
         }
 
         if (!_calculator.CanCalculate(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("InvalidSyntax"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("InvalidSyntax"));
             return;
         }
 

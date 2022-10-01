@@ -5,9 +5,9 @@ namespace Radzinsky.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Chat> Chats { get; set; }
-    public DbSet<ChatPortal> ChatPortals { get; set; }
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Chat> Chats { get; set; } = null!;
+    public DbSet<ChatPortal> ChatPortals { get; set; } = null!;
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }

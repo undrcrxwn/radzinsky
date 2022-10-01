@@ -1,6 +1,8 @@
 ﻿using HtmlAgilityPack;
 using Radzinsky.Application.Abstractions;
 
+namespace Radzinsky.Application.Services;
+
 public class HolidaysService : IHolidaysService
 {
     private const string HolidaysPageUrl = "https://kakoyprazdnik.com/";

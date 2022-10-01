@@ -1,15 +1,13 @@
-﻿using Radzinsky.Domain.Models.Entities;
-
-namespace Radzinsky.Application.Models.DTOs;
+﻿namespace Radzinsky.Application.Models.DTOs;
 
 public class MessageDto
 {
     public int Id { get; set; }
-    public string Text { get; set; }
-    public string NormalizedText { get; set; }
-    public UserDto Sender { get; set; }
-    public ChatDto Chat { get; set; }
-    public MessageDto? ReplyTarget { get; set; }
+    public string Text { get; set; } = null!;
+    public string NormalizedText { get; set; } = null!;
+    public UserDto Sender { get; set; } = null!;
+    public ChatDto Chat { get; set; } = null!;
+    public MessageDto? ReplyTarget { get; set; } = null!;
     public bool IsReplyToMe { get; set; }
     public bool IsPrivate { get; set; }
     public bool StartsWithMyName { get; set; }

@@ -47,7 +47,7 @@ public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
 
         var bestResult = scores.MaxBy(x => x.Naturality);
 
-        return bestResult.Naturality >= NaturalnessThreshold &&
+        return bestResult!.Naturality >= NaturalnessThreshold &&
                _similarityMeasurer.MeasureSimilarity(input, bestResult.Output) <= StringSimilarity.Medium
             ? bestResult.Output
             : input;

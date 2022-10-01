@@ -21,7 +21,7 @@ public class EditBioCommand : ICommand
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("TellBio"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("TellBio"));
             context.SetCommandCheckpoint("TellBio");
             return;
         }
@@ -33,6 +33,6 @@ public class EditBioCommand : ICommand
         sender.Bio = context.Payload;
 
         await _dbContext.SaveChangesAsync();
-        await context.ReplyAsync(context.Resources.GetRandom<string>("BioChanged"));
+        await context.ReplyAsync(context.Resources!.GetRandom<string>("BioChanged"));
     }
 }

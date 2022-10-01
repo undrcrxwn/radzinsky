@@ -1,7 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Behaviors;
@@ -16,8 +14,8 @@ public class WrongKeyboardLayoutBehavior : IBehavior
             return;
         }
 
-        var template = context.Resources.GetRandom<string>("ProbablyMeant");
+        var template = context.Resources!.GetRandom<string>("ProbablyMeant");
         var response = string.Format(template, context.Message.Sender.FirstName, context.Message.NormalizedText);
-        context.ReplyAsync(response);
+        await context.ReplyAsync(response);
     }
 }

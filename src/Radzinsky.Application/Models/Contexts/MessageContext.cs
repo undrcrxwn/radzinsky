@@ -1,8 +1,6 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
-using Radzinsky.Domain.Models;
-using Radzinsky.Domain.Models.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -10,21 +8,21 @@ namespace Radzinsky.Application.Models.Contexts;
 
 public class MessageContext
 {
-    public MessageDto Message;
+    public MessageDto Message = null!;
     public Checkpoint? Checkpoint;
     public ITelegramBotClient Bot;
         
-    protected readonly IInteractionService _interaction;
+    protected readonly IInteractionService Interaction;
 
     public MessageContext(ITelegramBotClient bot, IInteractionService interaction)
     {
         Bot = bot;
-        _interaction = interaction;
+        Interaction = interaction;
     }
     
     public void ResetCheckpoint()
     {
-        _interaction.ResetCheckpoint(Message.Sender.Id);
+        Interaction.ResetCheckpoint(Message.Sender.Id);
         Checkpoint = null;
     }
     
@@ -38,7 +36,7 @@ public class MessageContext
             disableWebPagePreview: disableWebPagePreview ?? true);
 
         if (handlerTypeName is not null)
-            await _interaction.SetPreviousReplyMessageIdAsync(
+            await Interaction.SetPreviousReplyMessageIdAsync(
                 handlerTypeName, message.Chat.Id, message.MessageId);
 
         return message.MessageId;

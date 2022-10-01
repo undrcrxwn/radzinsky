@@ -8,7 +8,7 @@ namespace Radzinsky.Application.Models.Contexts;
 
 public class BehaviorContext : MessageContext
 {
-    public string BehaviorTypeName;
+    public string BehaviorTypeName = null!;
     public BehaviorResources? Resources;
 
     public BehaviorContext(
@@ -18,7 +18,7 @@ public class BehaviorContext : MessageContext
 
     public Checkpoint SetMentionCheckpoint()
     {
-        Checkpoint = _interaction.IssueMentionCheckpoint(Message.Sender.Id);
+        Checkpoint = Interaction.IssueMentionCheckpoint(Message.Sender.Id);
         return Checkpoint;
     }
     

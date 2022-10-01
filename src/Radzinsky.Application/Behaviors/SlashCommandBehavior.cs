@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Behaviors.Base;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Serilog;
 
@@ -9,19 +8,16 @@ namespace Radzinsky.Application.Behaviors;
 
 public class SlashCommandBehavior : CommandBehaviorBase
 {
-    private readonly ILinguisticParser _parser;
     private readonly ICommandsService _commands;
     private readonly IResourcesService _resources;
 
     public SlashCommandBehavior(
-        ILinguisticParser parser,
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
         CommandContext commandContext)
         : base(commands, resources, scopeFactory, commandContext)
     {
-        _parser = parser;
         _commands = commands;
         _resources = resources;
     }
@@ -39,13 +35,14 @@ public class SlashCommandBehavior : CommandBehaviorBase
             return true;
         }
         
-        commandContext.CommandTypeName = _commands.GetCommandTypeNameBySlash(slash);
-        if (commandContext.CommandTypeName is null)
+        var commandTypeName = _commands.GetCommandTypeNameBySlash(slash);
+        if (commandTypeName is null)
         {
             Log.Information("No command with the given slash found in message");
             return false;
         }
 
+        commandContext.CommandTypeName = commandTypeName;
         commandContext.Resources = _resources.GetCommandResources(commandContext.CommandTypeName);
         commandContext.Payload = commandContext.Message.Text[slash.Length..].TrimStart();
         return true;

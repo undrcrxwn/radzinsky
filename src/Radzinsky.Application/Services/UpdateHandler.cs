@@ -2,7 +2,6 @@
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Models.DTOs;
-using Radzinsky.Domain.Models.Entities;
 using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -80,7 +79,7 @@ public class UpdateHandler : IUpdateHandler
         }
     }
 
-    private void FillBehaviorContext(BehaviorContext context, Telegram.Bot.Types.Message message)
+    private void FillBehaviorContext(BehaviorContext context, Message message)
     {
         context.Message = message.Adapt<MessageDto>();
         context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);

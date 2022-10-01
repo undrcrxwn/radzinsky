@@ -1,7 +1,7 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Extensions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Persistence;
 
@@ -23,7 +23,7 @@ public class StatusCommand : ICommand
         var response = new StringBuilder();
 
         response.Append("UTC: ");
-        response.AppendLine(DateTime.UtcNow.ToString());
+        response.AppendLine(DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
         
         response.Append("Аптайм: ");
         response.AppendLine(_runtimeInfo.GetUptime().ToShortString());

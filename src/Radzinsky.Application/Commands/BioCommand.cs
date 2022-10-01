@@ -15,14 +15,14 @@ public class BioCommand : ICommand
     {
         if (context.Message.ReplyTarget is null)
         {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("NoTarget"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("NoTarget"));
             return;
         }
         
         var target = await _dbContext.Users.FindAsync(context.Message.ReplyTarget.Sender.Id);
         if (target?.Bio is null)
         {
-            await context.ReplyAsync(context.Resources.GetRandom<string>("NoBio"));
+            await context.ReplyAsync(context.Resources!.GetRandom<string>("NoBio"));
             return;
         }
 

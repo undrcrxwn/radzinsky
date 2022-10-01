@@ -23,7 +23,7 @@ public class MisunderstandingBehavior : IBehavior
             if (context.Checkpoint is MentionCheckpoint)
                 context.ResetCheckpoint();
             
-            await context.ReplyAsync(context.Resources.GetRandom("CannotUnderstandYou"));
+            await context.ReplyAsync(context.Resources!.GetRandom("CannotUnderstandYou"));
             return;
         }
 

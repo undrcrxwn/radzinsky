@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Checkpoints;
 
 namespace Radzinsky.Application.Services;
@@ -36,13 +35,16 @@ public class InteractionService : IInteractionService
     public void ResetCheckpoint(long userId) =>
         _cache.Remove(GetCheckpointCacheEntryName(userId));
 
-    public async Task SetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId, int messageId) =>
+    public Task SetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId, int messageId)
+    {
         _cache.Set(GetReplyMessageIdCacheEntryName(handlerTypeName, chatId), messageId);
+        return Task.CompletedTask;
+    }
 
-    public async Task<int?> TryGetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId)
+    public Task<int?> TryGetPreviousReplyMessageIdAsync(string handlerTypeName, long chatId)
     {
         _cache.TryGetValue(GetReplyMessageIdCacheEntryName(handlerTypeName, chatId), out int? messageId);
-        return messageId;
+        return Task.FromResult(messageId);
     }
 
     private void SetUserCheckpoint(long userId, Checkpoint checkpoint) =>

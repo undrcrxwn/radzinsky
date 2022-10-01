@@ -1,6 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Behaviors;
@@ -18,11 +17,11 @@ public class MentionBehavior : IBehavior
         if (mention is null || !string.IsNullOrWhiteSpace(
                 context.Message.Text.Substring(mention.Segment.Length)))
         {
-            next(context);
+            await next(context);
             return;
         }
 
         context.SetMentionCheckpoint();
-        await context.ReplyAsync(context.Resources.GetRandom<string>("AtYourService"));
+        await context.ReplyAsync(context.Resources!.GetRandom<string>("AtYourService"));
     }
 }

@@ -6,7 +6,6 @@ using Hangfire.PostgreSql;
 using Mapster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Behaviors;
@@ -15,8 +14,6 @@ using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Radzinsky.Application.Services;
-using Radzinsky.Domain.Models;
-using Radzinsky.Domain.Models.Entities;
 using Serilog;
 
 namespace Radzinsky.Application.Extensions;
@@ -57,10 +54,12 @@ public static class ServiceCollectionExtensions
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
                 destination => destination.Sender,
-                source => source.From.Adapt<UserDto>())
+                source => source.From == null ? null
+                    : source.From.Adapt<UserDto>())
             .Map(
                 destination => destination.ReplyTarget,
-                source => source.ReplyToMessage.Adapt<MessageDto>());
+                source => source.ReplyToMessage == null ? null
+                    : source.ReplyToMessage.Adapt<MessageDto>());
 
         return services;
     }
@@ -88,19 +87,19 @@ public static class ServiceCollectionExtensions
                 Log.Warning("Behavior of type {0} is not registered", behaviorType.FullName);
         }
 
-        return services.AddBehaviorResources(implementations.Select(x => x.FullName));
+        return services.AddBehaviorResources(implementations.Select(x => x.FullName!));
     }
 
     private static IServiceCollection AddCommandsAndResources(this IServiceCollection services)
     {
-        var commandTypes = GetImplementationsOf<ICommand>();
+        var commandTypes = GetImplementationsOf<ICommand>().ToArray();
         foreach (var commandType in commandTypes)
         {
             Log.Information("Registering command of type {0}", commandType.FullName);
             services.AddScoped(commandType);
         }
 
-        return services.AddCommandResources(commandTypes.Select(x => x.FullName));
+        return services.AddCommandResources(commandTypes.Select(x => x.FullName!));
     }
 
     private static IServiceCollection AddCommandResources(
@@ -118,7 +117,7 @@ public static class ServiceCollectionExtensions
                     : null;
             });
 
-        return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap);
+        return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap!);
     }
 
     private static IServiceCollection AddBehaviorResources(
@@ -178,7 +177,7 @@ public static class ServiceCollectionExtensions
         using var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
 
         return csvReader.GetRecords<BigramFrequency>()
-            .ToDictionary(x => x.Bigram, x => (double)x.Frequency);
+            .ToDictionary(x => x.Bigram, x => x.Frequency);
     }
 
     private static IEnumerable<Type> GetImplementationsOf<T>() where T : class =>

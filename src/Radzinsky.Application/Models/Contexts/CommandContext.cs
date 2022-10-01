@@ -8,9 +8,9 @@ namespace Radzinsky.Application.Models.Contexts;
 
 public class CommandContext : MessageContext
 {
-    public string CommandTypeName;
+    public string CommandTypeName = null!;
     public CommandResources? Resources;
-    public string Payload;
+    public string Payload = null!;
 
     public CommandContext(ITelegramBotClient bot, IInteractionService interaction)
         : base(bot, interaction) { }
@@ -25,13 +25,13 @@ public class CommandContext : MessageContext
 
     public Checkpoint SetCommandCheckpoint(string name)
     {
-        Checkpoint = _interaction.IssueCheckpoint(name, CommandTypeName, Message.Sender.Id);
+        Checkpoint = Interaction.IssueCheckpoint(name, CommandTypeName, Message.Sender.Id);
         return Checkpoint;
     }
 
     public async Task DeletePreviousReplyAsync()
     {
-        var messageId = await _interaction.TryGetPreviousReplyMessageIdAsync(
+        var messageId = await Interaction.TryGetPreviousReplyMessageIdAsync(
             CommandTypeName, Message.Chat.Id);
         
         if (messageId is not null)
