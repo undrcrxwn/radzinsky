@@ -1,10 +1,11 @@
 ﻿using Mapster;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models.Contexts;
+using Radzinsky.Application.Models.DTOs;
+using Radzinsky.Domain.Models.Entities;
 using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Message = Radzinsky.Domain.Models.Message;
 
 namespace Radzinsky.Application.Services;
 
@@ -81,7 +82,7 @@ public class UpdateHandler : IUpdateHandler
 
     private void FillBehaviorContext(BehaviorContext context, Telegram.Bot.Types.Message message)
     {
-        context.Message = message.Adapt<Message>();
+        context.Message = message.Adapt<MessageDto>();
         context.Message.NormalizedText = _keyboardLayoutTranslator.Translate(context.Message.Text);
         context.Message.IsReplyToMe = context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId;
         context.Message.IsPrivate = message.Chat.Type == ChatType.Private;

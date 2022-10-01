@@ -1,6 +1,6 @@
-﻿namespace Radzinsky.Domain.Models;
+﻿namespace Radzinsky.Application.Models.DTOs;
 
-public class User
+public class UserDto
 {
     public long Id { get; set; }
     public string FirstName { get; set; }

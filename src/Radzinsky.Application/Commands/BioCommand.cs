@@ -19,13 +19,13 @@ public class BioCommand : ICommand
             return;
         }
         
-        var bio = await _dbContext.UserBios.FindAsync(context.Message.ReplyTarget.Sender.Id);
-        if (bio is null)
+        var target = await _dbContext.Users.FindAsync(context.Message.ReplyTarget.Sender.Id);
+        if (target?.Bio is null)
         {
             await context.ReplyAsync(context.Resources.GetRandom<string>("NoBio"));
             return;
         }
 
-        await context.ReplyAsync(bio.Description);
+        await context.ReplyAsync(target.Bio);
     }
 }

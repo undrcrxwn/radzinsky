@@ -1,4 +1,4 @@
-﻿namespace Radzinsky.Domain.Models;
+﻿namespace Radzinsky.Domain.Models.Entities;
 
 public class Chat
 {

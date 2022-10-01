@@ -12,9 +12,11 @@ using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Behaviors;
 using Radzinsky.Application.Models;
 using Radzinsky.Application.Models.Contexts;
+using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Radzinsky.Application.Services;
 using Radzinsky.Domain.Models;
+using Radzinsky.Domain.Models.Entities;
 using Serilog;
 
 namespace Radzinsky.Application.Extensions;
@@ -52,13 +54,13 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services)
     {
-        TypeAdapterConfig<Telegram.Bot.Types.Message, Message>.NewConfig()
+        TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
                 destination => destination.Sender,
-                source => source.From.Adapt<User>())
+                source => source.From.Adapt<UserDto>())
             .Map(
                 destination => destination.ReplyTarget,
-                source => source.ReplyToMessage.Adapt<Message>());
+                source => source.ReplyToMessage.Adapt<MessageDto>());
 
         return services;
     }
