@@ -9,6 +9,12 @@ public class MisunderstandingBehavior : IBehavior
 {
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
+        if (context.Message.IsReplyToMe)
+        {
+            await next(context);
+            return;
+        }
+        
         if (context.Message.IsPrivate ||
             context.Message.IsReplyToMe ||
             context.Message.StartsWithMyName ||
