@@ -16,7 +16,6 @@ public class MisunderstandingBehavior : IBehavior
         }
         
         if (context.Message.IsPrivate ||
-            context.Message.IsReplyToMe ||
             context.Message.StartsWithMyName ||
             context.Checkpoint is MentionCheckpoint)
         {
