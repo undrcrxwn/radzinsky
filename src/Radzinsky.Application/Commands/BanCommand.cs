@@ -4,7 +4,6 @@ using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Domain.Enumerations;
 using Radzinsky.Persistence;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Application.Commands;
 
@@ -43,13 +42,21 @@ public class BanCommand : ICommand
             x.Chat.Id == context.Message.Chat.Id &&
             x.User.Id == context.Message.ReplyTarget.Sender.Id);
 
-        if (!sender.IsChatAdministrator && !sender.Role.Permissions.Contains(MemberPermissions.Ban))
+        var hasPermission =
+            sender.Role is not null &&
+            !sender.Role.Permissions.Contains(MemberPermissions.Ban);
+
+        if (!sender.IsChatAdministrator && !hasPermission)
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("NoPermission"));
             return;
         }
 
-        if (target.IsChatAdministrator || target.Role.Priority >= sender.Role.Priority)
+        var hasEnoughPriority =
+            target.Role is not null &&
+            (sender.Role is null || target.Role.Priority >= sender.Role.Priority);
+
+        if (target.IsChatAdministrator || !hasEnoughPriority)
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanHigherRole"));
             return;
