@@ -144,7 +144,7 @@ public static class ServiceCollectionExtensions
     {
         var data = ParseJObjectFromRelativeLocation(CommonResourcesPath);
         return data is not null
-            ? services.AddSingleton(data)
+            ? services.AddSingleton(new CommonResources(data))
             : services;
     }
 
