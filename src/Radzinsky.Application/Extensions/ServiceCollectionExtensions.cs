@@ -54,11 +54,13 @@ public static class ServiceCollectionExtensions
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
                 destination => destination.Sender,
-                source => source.From == null ? null
+                source => source.From == null
+                    ? null
                     : source.From.Adapt<UserDto>())
             .Map(
                 destination => destination.ReplyTarget,
-                source => source.ReplyToMessage == null ? null
+                source => source.ReplyToMessage == null
+                    ? null
                     : source.ReplyToMessage.Adapt<MessageDto>());
 
         return services;
@@ -113,7 +115,7 @@ public static class ServiceCollectionExtensions
 
                 var data = ParseJObjectFromRelativeLocation(path);
                 return data is not null
-                    ? new CommandResources(ParseJObjectFromRelativeLocation(path))
+                    ? new CommandResources(data)
                     : null;
             });
 
@@ -138,8 +140,13 @@ public static class ServiceCollectionExtensions
         return services.AddSingleton<IDictionary<string, BehaviorResources?>>(resourceMap);
     }
 
-    private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
-        services.AddSingleton(new CommonResources(ParseJObjectFromRelativeLocation(CommonResourcesPath)));
+    private static IServiceCollection AddCommonResources(this IServiceCollection services)
+    {
+        var data = ParseJObjectFromRelativeLocation(CommonResourcesPath);
+        return data is not null
+            ? services.AddSingleton(data)
+            : services;
+    }
 
     private static JObject? ParseJObjectFromRelativeLocation(string relativePath)
     {
