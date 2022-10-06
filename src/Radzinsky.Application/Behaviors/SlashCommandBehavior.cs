@@ -35,7 +35,7 @@ public class SlashCommandBehavior : CommandBehaviorBase
             return true;
         }
 
-        slash = slash[1..].ToString().ToLower();
+        slash = slash[1..].ToLower();
         
         if (slash.Contains('@'))
         {
