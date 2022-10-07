@@ -1,6 +1,8 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
+using Radzinsky.Domain.Enumerations;
+using Radzinsky.Domain.Models.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -44,4 +46,9 @@ public class MessageContext
     
     public async Task DeleteMessageAsync(int messageId) =>
         await Bot.DeleteMessageAsync(Message.Chat.Id, messageId);
+
+    public bool Authorize(ChatMember member, MemberPermissions permission)
+    {
+        return 
+    }
 }

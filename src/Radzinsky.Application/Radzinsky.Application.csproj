@@ -17,6 +17,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0-preview.6.22324.4" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+      <PackageReference Include="OneOf" Version="3.0.223" />
       <PackageReference Include="Serilog" Version="2.11.1-dev-01397" />
       <PackageReference Include="Telegram.Bot" Version="18.0.0" />
     </ItemGroup>

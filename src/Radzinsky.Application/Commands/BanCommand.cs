@@ -46,7 +46,7 @@ public class BanCommand : ICommand
             sender.Role is not null &&
             !sender.Role.Permissions.Contains(MemberPermissions.Ban);
 
-        if (!sender.IsChatAdministrator && !hasPermission)
+        if (!context.Authorize(sender, MemberPermissions.Ban))
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("NoPermission"));
             return;
