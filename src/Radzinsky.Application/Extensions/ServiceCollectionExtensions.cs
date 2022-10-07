@@ -54,11 +54,13 @@ public static class ServiceCollectionExtensions
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
                 destination => destination.Sender,
-                source => source.From == null ? null
+                source => source.From == null
+                    ? null
                     : source.From.Adapt<UserDto>())
             .Map(
                 destination => destination.ReplyTarget,
-                source => source.ReplyToMessage == null ? null
+                source => source.ReplyToMessage == null
+                    ? null
                     : source.ReplyToMessage.Adapt<MessageDto>());
 
         return services;
@@ -115,9 +117,11 @@ public static class ServiceCollectionExtensions
                 return data is not null
                     ? new CommandResources(ParseJObjectFromRelativeLocation(path))
                     : null;
-            });
+            })
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);;
 
-        return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap!);
+        return services.AddSingleton<IDictionary<string, CommandResources?>>(resourceMap);
     }
 
     private static IServiceCollection AddBehaviorResources(
@@ -133,7 +137,9 @@ public static class ServiceCollectionExtensions
                 return data is not null
                     ? new BehaviorResources(data)
                     : null;
-            });
+            })
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);
 
         return services.AddSingleton<IDictionary<string, BehaviorResources?>>(resourceMap);
     }
