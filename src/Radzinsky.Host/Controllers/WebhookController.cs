@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 namespace Radzinsky.Host.Controllers;
 
 [ApiController, Route("bot")]
-public class WebhookController : Controller
+public class WebhookController : ControllerBase
 {
     [HttpPost("{token}")]
     public async Task<IActionResult> ReceiveUpdateAsync(
