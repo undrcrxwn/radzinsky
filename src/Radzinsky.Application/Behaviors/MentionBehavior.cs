@@ -1,6 +1,7 @@
 ﻿using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
 using Radzinsky.Application.Models;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
 
@@ -30,7 +31,7 @@ public class MentionBehavior : IBehavior
             return;
         }
 
-        context.SetLocalCheckpoint("BotMentioned");
+        context.SetCheckpoint(CommandCheckpoint.From with { Name = "BotMentioned" });
         await context.ReplyAsync(context.Resources!.GetRandom<string>("AtYourService"));
     }
 }

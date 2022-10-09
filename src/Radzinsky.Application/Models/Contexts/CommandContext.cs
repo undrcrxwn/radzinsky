@@ -1,4 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Telegram.Bot;
@@ -17,4 +18,7 @@ public class CommandContext : ContextBase<CommandResources>
         ICheckpointMemoryService checkpoints,
         IReplyMemoryService replies)
         : base(bot, checkpoints, replies) { }
+    
+    public override CommandCheckpoint LocalCheckpoint => new(null!, HandlerTypeName, Update.ChatId);
+    public override CommandCheckpoint GlobalCheckpoint => new(null!, HandlerTypeName, null);
 }

@@ -43,8 +43,8 @@ public abstract class CommandBehaviorBase : IBehavior
         _commandContext.Message = message;
         
         // Extract command from checkpoint if possible
-        var checkpoint =  _checkpoints.TryGetCurrentCheckpoint(context.Update.InteractorUserId!.Value, typeof(MentionBehavior).FullName!);
-        if (checkpoint is not null)
+        var checkpoint = context.GetCheckpoint();
+        if (checkpoint is CommandCheckpoint)
         {
             _commandContext.Payload = message.NormalizedText;
             _commandContext.HandlerTypeName = checkpoint.HandlerTypeName;

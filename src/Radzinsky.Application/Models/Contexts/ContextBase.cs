@@ -1,4 +1,5 @@
 ﻿using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Telegram.Bot;
@@ -29,13 +30,11 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     }
 
     #region Checkpoints
-
-    public void SetLocalCheckpoint(string name, TimeSpan? duration = null)
-    {
-        SetLocalCheckpoint(new Checkpoint(name, HandlerTypeName));
-    }
     
-    public void SetLocalCheckpoint(Checkpoint checkpoint, TimeSpan? duration = null)
+    public abstract Checkpoint LocalCheckpoint { get; }
+    public abstract Checkpoint GlobalCheckpoint { get; }
+    
+    public void SetCheckpoint(Checkpoint checkpoint, TimeSpan? duration = null)
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
@@ -47,8 +46,19 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
+        
+        if (Update.ChatId is null)
+            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
 
-        return _checkpoints.TryGetCurrentCheckpoint(Update.InteractorUserId.Value, HandlerTypeName);
+        return _checkpoints.GetLocalCheckpoint(Update.InteractorUserId.Value, Update.ChatId.Value, HandlerTypeName);
+    }
+
+    public Checkpoint? GetCheckpoint(string? handlerTypeName = null)
+    {
+        if (Update.InteractorUserId is null)
+            throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
+        
+        return _checkpoints.GetCheckpoint(Update.InteractorUserId.Value);
     }
 
     #endregion
@@ -74,7 +84,6 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     public async Task DeletePreviousReplyAsync()
     {
         var messageId = GetPreviousReplyMessageId();
-
         if (messageId is not null)
             await DeleteMessageAsync(messageId.Value);
     }
