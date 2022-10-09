@@ -40,7 +40,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<IResourcesService, ResourcesService>()
             .AddSingleton<IWebSearchService, GoogleSearchService>()
             .AddTransient<IRuntimeInfoService, RuntimeInfoService>()
-            .AddSingleton<IInteractionService, InteractionService>()
+            .AddSingleton<ICheckpointMemoryService, CheckpointMemoryService>()
             .AddSingleton<ICommandsService, CommandsService>()
             .AddSingleton<IHolidaysService, HolidaysService>()
             .AddSingleton<INewsService, PanoramaNewsService>()

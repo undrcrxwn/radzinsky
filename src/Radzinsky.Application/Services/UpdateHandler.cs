@@ -12,7 +12,7 @@ public class UpdateHandler : IUpdateHandler
 {
     private readonly IEnumerable<IBehavior> _behaviors;
     private readonly IResourcesService _resources;
-    private readonly IInteractionService _interaction;
+    private readonly ICheckpointMemoryService _checkpoint;
     private readonly IKeyboardLayoutTranslator _keyboardLayoutTranslator;
     private readonly ILinguisticParser _parser;
     private readonly BehaviorContext _behaviorContext;
@@ -20,14 +20,14 @@ public class UpdateHandler : IUpdateHandler
     public UpdateHandler(
         IEnumerable<IBehavior> behaviors,
         IResourcesService resources,
-        IInteractionService interaction,
+        ICheckpointMemoryService checkpoint,
         IKeyboardLayoutTranslator keyboardLayoutTranslator,
         ILinguisticParser parser,
         BehaviorContext behaviorContext)
     {
         _behaviors = behaviors;
         _resources = resources;
-        _interaction = interaction;
+        _checkpoint = checkpoint;
         _keyboardLayoutTranslator = keyboardLayoutTranslator;
         _parser = parser;
         _behaviorContext = behaviorContext;
@@ -87,6 +87,6 @@ public class UpdateHandler : IUpdateHandler
         context.Message.IsPrivate = message.Chat.Type == ChatType.Private;
         context.Message.StartsWithMyName =
             _parser.TryParseMentionFromBeginning(context.Message.NormalizedText) is not null;
-        context.Checkpoint = _interaction.TryGetCurrentCheckpoint(context.Message.Sender.Id);
+        context.Checkpoint = _checkpoint.TryGetCurrentCheckpoint(context.Message.Sender.Id);
     }
 }

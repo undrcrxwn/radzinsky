@@ -1,6 +1,5 @@
 ﻿using Mapster;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Domain.Models.Entities;
 using Radzinsky.Persistence;

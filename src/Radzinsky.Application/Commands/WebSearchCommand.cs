@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
 
@@ -57,6 +56,6 @@ public class WebSearchCommand : ICommand
 
         // Send reply
         cancellationToken.ThrowIfCancellationRequested();
-        await context.ReplyAsync(text, ParseMode.Html, true);
+        await context.ReplyAsync(text, ParseMode.Html, disableWebPagePreview: true);
     }
 }
