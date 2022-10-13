@@ -9,6 +9,7 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
 {
     private readonly ILinguisticParser _parser;
     private readonly ICommandsService _commands;
+    private readonly ICheckpointMemoryService _checkpoints;
     private readonly IResourcesService _resources;
 
     public LinguisticCommandBehavior(
@@ -16,11 +17,13 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
+        ICheckpointMemoryService checkpoints,
         CommandContext commandContext)
-        : base(commands, resources, scopeFactory, commandContext)
+        : base(commands, resources, scopeFactory, commandContext, checkpoints)
     {
         _parser = parser;
         _commands = commands;
+        _checkpoints = checkpoints;
         _resources = resources;
     }
 
@@ -29,16 +32,21 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
         commandContext.Payload = commandContext.Message.NormalizedText;
         
         // Extract command from checkpoint if possible
-        if (commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
+        var checkpoint = _checkpoints.GetCheckpoint(behaviorContext.Update.InteractorUserId!.Value);
+        if (checkpoint is not null)
         {
-            commandContext.Resources = _resources.GetCommandResources(commandCheckpoint.CommandTypeName);
-            return true;
+            var commandResources = _resources.GetCommandResources(checkpoint.HandlerTypeName);
+            if (commandResources is not null)
+            {
+                commandContext.Resources = _resources.GetCommandResources(checkpoint.HandlerTypeName);
+                return true;
+            }
         }
 
         // Parse mention
         var mention = _parser.TryParseMentionFromBeginning(commandContext.Payload);
         if (mention is null &&
-            commandContext.Checkpoint is null &&
+            checkpoint!.Name == "BotMentioned" &&
             !commandContext.Message.IsReplyToMe &&
             !commandContext.Message.IsPrivate)
         {
@@ -61,8 +69,8 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
             return true;
         }
 
-        commandContext.CommandTypeName = _commands.GetCommandTypeNameByAlias(alias.Case)!;
-        commandContext.Resources = _resources.GetCommandResources(commandContext.CommandTypeName);
+        commandContext.HandlerTypeName = _commands.GetCommandTypeNameByAlias(alias.Case)!;
+        commandContext.Resources = _resources.GetCommandResources(commandContext.HandlerTypeName);
         commandContext.Payload = commandContext.Payload[alias.Segment.Length..].TrimStart();
         return true;
     }

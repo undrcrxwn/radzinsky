@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
             .AddHangfire(configuration)
             .AddBehaviorsAndResources()
             .AddCommandsAndResources()
+            .AddCallbackQueryHandlers()
             .AddCommonResources()
             .AddLinguisticParsing()
             .AddBigramFrequencies()
@@ -46,6 +47,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<INewsService, PanoramaNewsService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
             .AddSingleton<ICalculator, Calculator>()
+            .AddSingleton<IHashingService, MD5HashingService>()
             .AddScoped<BehaviorContext>()
             .AddScoped<CommandContext>();
 
@@ -102,6 +104,18 @@ public static class ServiceCollectionExtensions
         }
 
         return services.AddCommandResources(commandTypes.Select(x => x.FullName!));
+    }
+
+    private static IServiceCollection AddCallbackQueryHandlers(this IServiceCollection services)
+    {
+        var handlerTypes = GetImplementationsOf<ICallbackQueryHandler>().ToArray();
+        foreach (var handlerType in handlerTypes)
+        {
+            Log.Information("Registering callback query handler of type {0}", handlerType.FullName);
+            services.AddScoped(typeof(ICallbackQueryHandler), handlerType);
+        }
+
+        return services;
     }
 
     private static IServiceCollection AddCommandResources(

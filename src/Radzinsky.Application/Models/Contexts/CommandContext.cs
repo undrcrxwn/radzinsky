@@ -18,7 +18,4 @@ public class CommandContext : ContextBase<CommandResources>
         ICheckpointMemoryService checkpoints,
         IReplyMemoryService replies)
         : base(bot, checkpoints, replies) { }
-    
-    public override CommandCheckpoint LocalCheckpoint => new(null!, HandlerTypeName, Update.ChatId);
-    public override CommandCheckpoint GlobalCheckpoint => new(null!, HandlerTypeName, null);
 }

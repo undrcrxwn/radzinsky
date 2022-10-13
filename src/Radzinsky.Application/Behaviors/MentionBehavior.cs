@@ -31,7 +31,7 @@ public class MentionBehavior : IBehavior
             return;
         }
 
-        context.SetCheckpoint(CommandCheckpoint.From with { Name = "BotMentioned" });
+        context.SetCheckpoint("BotMentioned");
         await context.ReplyAsync(context.Resources!.GetRandom<string>("AtYourService"));
     }
 }

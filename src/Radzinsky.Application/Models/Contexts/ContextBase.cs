@@ -30,35 +30,58 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     }
 
     #region Checkpoints
-    
-    public abstract Checkpoint LocalCheckpoint { get; }
-    public abstract Checkpoint GlobalCheckpoint { get; }
-    
+
+    public void SetCheckpoint(string name, TimeSpan? duration = null)
+    {
+        var checkpoint = new Checkpoint(name, HandlerTypeName, Update.ChatId);
+        SetCheckpoint(checkpoint, duration);
+    }
+
+    public void SetCheckpoint<TPayload>(string name, TPayload payload, TimeSpan? duration = null)
+    {
+        var checkpoint = new Checkpoint<TPayload>(name, HandlerTypeName, Update.ChatId, payload);
+        SetCheckpoint(checkpoint, duration);
+    }
+
     public void SetCheckpoint(Checkpoint checkpoint, TimeSpan? duration = null)
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
-        
+
         _checkpoints.SetCheckpoint(Update.InteractorUserId.Value, checkpoint, duration);
     }
+
+    public Checkpoint<TPayload>? GetLocalCheckpoint<TPayload>() =>
+        GetLocalCheckpoint() as Checkpoint<TPayload>;
 
     public Checkpoint? GetLocalCheckpoint()
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
-        
+
         if (Update.ChatId is null)
             throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
 
         return _checkpoints.GetLocalCheckpoint(Update.InteractorUserId.Value, Update.ChatId.Value, HandlerTypeName);
     }
+    
+    public Checkpoint? GetCheckpoint<TPayload>(string? handlerTypeName = null) =>
+        GetCheckpoint(handlerTypeName) as Checkpoint<TPayload>;
 
     public Checkpoint? GetCheckpoint(string? handlerTypeName = null)
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
-        
+
         return _checkpoints.GetCheckpoint(Update.InteractorUserId.Value);
+    }
+
+    public void ResetCheckpoint()
+    {
+        if (Update.InteractorUserId is null)
+            throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
+
+        _checkpoints.ResetCheckpoint(Update.InteractorUserId.Value);
     }
 
     #endregion
@@ -69,7 +92,7 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     {
         if (Update.ChatId is null)
             throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-        
+
         _replies.SetPreviousReplyMessageId(HandlerTypeName, Update.ChatId.Value, messageId);
     }
 
@@ -77,17 +100,17 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     {
         if (Update.ChatId is null)
             throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-        
+
         return _replies.TryGetPreviousReplyMessageId(HandlerTypeName, Update.ChatId.Value);
     }
-    
+
     public async Task DeletePreviousReplyAsync()
     {
         var messageId = GetPreviousReplyMessageId();
         if (messageId is not null)
             await DeleteMessageAsync(messageId.Value);
     }
-    
+
     #endregion
 
     public async Task<int> ReplyAsync(
@@ -98,20 +121,20 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
     {
         if (Update.ChatId is null)
             throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-        
+
         var message = await _bot.SendTextMessageAsync(Update.ChatId.Value, text, parseMode, replyMarkup: replyMarkup,
             disableWebPagePreview: disableWebPagePreview ?? true);
 
         SetPreviousReplyMessageId(message.MessageId);
-        
+
         return message.MessageId;
     }
-    
+
     public async Task DeleteMessageAsync(int messageId)
     {
         if (Update.ChatId is null)
             throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-        
+
         await _bot.DeleteMessageAsync(Update.ChatId, messageId);
     }
 }

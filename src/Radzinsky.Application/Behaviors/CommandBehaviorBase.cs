@@ -44,7 +44,7 @@ public abstract class CommandBehaviorBase : IBehavior
         
         // Extract command from checkpoint if possible
         var checkpoint = context.GetCheckpoint();
-        if (checkpoint is CommandCheckpoint)
+        if (checkpoint is not null)
         {
             _commandContext.Payload = message.NormalizedText;
             _commandContext.HandlerTypeName = checkpoint.HandlerTypeName;
@@ -60,12 +60,12 @@ public abstract class CommandBehaviorBase : IBehavior
             }
         }
         
-        var mentionCheckpoint =  _checkpoints.TryGetCurrentCheckpoint(context.Update.InteractorUserId!.Value, typeof(MentionBehavior).FullName!);
+        var mentionCheckpoint =  context.GetCheckpoint(typeof(MentionBehavior).FullName!);
         if (mentionCheckpoint is { Name: "BotMentioned" })
             context.ResetCheckpoint();
         
         using var scope = _scopeFactory.CreateScope();
-        var command = _commands.GetCommandInstance(scope, _commandContext.CommandTypeName);
+        var command = _commands.GetCommandInstance(scope, _commandContext.HandlerTypeName);
         await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
     }
 
