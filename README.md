@@ -21,13 +21,13 @@ That one single Telegram bot to replace all the others
 1. Initialize [user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for [Radzinsky.Host](src/Radzinsky.Host)
 1. Paste the copied ngrok public URL into the `Telegram:WebhookHost` field of the user secrets configuration
 1. Fill the rest of user secrets (see [appsettings.json](src/Radzinsky.Host/appsettings.json))
-1. Run `dotnet run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
+1. Run `dotnet run -p src/Radzinsky.Host/Radzinsky.Host.csproj -c Release --environment Production`
 1. Give this repo a star
 
 ### If using [PM2](https://pm2.keymetrics.io)
 - `pm2 start ngrok -- http 8443` to start a tunnel
 - `curl http://localhost:4040/api/tunnels` to get the ngrok public URL
-- Running webhook host process: `pm2 start dotnet -- run --project src/Radzinsky.Host/Radzinsky.Host.csproj --configuration Release --environment Production`
+- Running webhook host process: `pm2 start -n radzinsky "dotnet run -p src/Radzinsky.Host/Radzinsky.Host.csproj -c Release --environment Production"`
 
 ### Useful links
 - [Radzinsky](https://t.me/radzinsky_bot) — the bot
