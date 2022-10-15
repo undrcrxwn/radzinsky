@@ -2,5 +2,6 @@
 
 public class CallbackQueryDto
 {
-    public CallbackQueryDataDto Data { get; set; }
+    public string CallbackHandlerTypeNameHash { get; set; } = null!;
+    public string Data { get; set; } = null!;
 }

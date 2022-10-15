@@ -65,10 +65,10 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
         return _checkpoints.GetLocalCheckpoint(Update.InteractorUserId.Value, Update.ChatId.Value, HandlerTypeName);
     }
     
-    public Checkpoint? GetCheckpoint<TPayload>(string? handlerTypeName = null) =>
-        GetCheckpoint(handlerTypeName) as Checkpoint<TPayload>;
+    public Checkpoint? GetCheckpoint<TPayload>() =>
+        GetCheckpoint() as Checkpoint<TPayload>;
 
-    public Checkpoint? GetCheckpoint(string? handlerTypeName = null)
+    public Checkpoint? GetCheckpoint()
     {
         if (Update.InteractorUserId is null)
             throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
@@ -113,7 +113,7 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
 
     #endregion
 
-    public async Task<int> ReplyAsync(
+    public async ValueTask<int> ReplyAsync(
         string text,
         ParseMode? parseMode = null,
         IReplyMarkup? replyMarkup = null,

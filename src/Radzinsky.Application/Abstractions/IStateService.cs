@@ -1,7 +1,9 @@
-﻿namespace Radzinsky.Application.Abstractions;
+﻿using Radzinsky.Domain.Models.Entities;
+
+namespace Radzinsky.Application.Abstractions;
 
 public interface IStateService
 {
-    public T? ReadState<T>(string stateKey);
-    public void WriteState(string stateKey, object state);
+    public Task<T?> ReadStateAsync<T>(string stateKey) where T : State;
+    public Task WriteStateAsync(State state);
 }

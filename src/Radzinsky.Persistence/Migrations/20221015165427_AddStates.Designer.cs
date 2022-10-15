@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Radzinsky.Persistence;
@@ -11,9 +12,10 @@ using Radzinsky.Persistence;
 namespace Radzinsky.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221015165427_AddStates")]
+    partial class AddStates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,20 +53,19 @@ namespace Radzinsky.Persistence.Migrations
                     b.ToTable("ChatPortals");
                 });
 
-            modelBuilder.Entity("Radzinsky.Domain.Models.Entities.State", b =>
+            modelBuilder.Entity("Radzinsky.Domain.Models.Entities.StateEntry", b =>
                 {
                     b.Property<string>("Key")
                         .HasColumnType("text");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("StateId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Key");
 
-                    b.ToTable("States");
+                    b.HasIndex("StateId");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("State");
+                    b.ToTable("States");
                 });
 
             modelBuilder.Entity("Radzinsky.Domain.Models.Entities.User", b =>
@@ -89,17 +90,26 @@ namespace Radzinsky.Persistence.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Radzinsky.Domain.Models.Entities.States.SurveyState", b =>
+            modelBuilder.Entity("Radzinsky.Domain.Models.ValueObjects.State", b =>
                 {
-                    b.HasBaseType("Radzinsky.Domain.Models.Entities.State");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
-                    b.Property<int?>("MatrixCellId")
-                        .HasColumnType("integer");
+                    b.HasKey("Id");
 
-                    b.Property<int?>("Rating")
-                        .HasColumnType("integer");
+                    b.ToTable("State");
+                });
 
-                    b.HasDiscriminator().HasValue("SurveyState");
+            modelBuilder.Entity("Radzinsky.Domain.Models.Entities.StateEntry", b =>
+                {
+                    b.HasOne("Radzinsky.Domain.Models.ValueObjects.State", "State")
+                        .WithMany()
+                        .HasForeignKey("StateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("State");
                 });
 #pragma warning restore 612, 618
         }

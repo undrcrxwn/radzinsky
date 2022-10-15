@@ -94,7 +94,7 @@
       <None Update="Resources\Commands\PortalCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Resources\Commands\InlineKeyboardCommand.json">
+      <None Update="Resources\Commands\SurveyCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

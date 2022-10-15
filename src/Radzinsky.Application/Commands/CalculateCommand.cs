@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Behaviors;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Commands;
@@ -13,10 +14,12 @@ public class CalculateCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is not CommandCheckpoint &&
+        var checkpoint =  context.GetCheckpoint();
+        
+        if (checkpoint is { Name: "BotMentioned" } &&
             string.IsNullOrWhiteSpace(context.Payload))
         {
-            context.SetCommandCheckpoint("WaitingForExpression");
+            context.SetCheckpoint("WaitingForExpression");
             await context.ReplyAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
             return;
         }

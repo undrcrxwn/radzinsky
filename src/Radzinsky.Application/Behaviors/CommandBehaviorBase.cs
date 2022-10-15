@@ -40,8 +40,9 @@ public abstract class CommandBehaviorBase : IBehavior
         var message = context.Update.Message!;
         
         // Fill command context
+        _commandContext.Update = context.Update;
         _commandContext.Message = message;
-        
+
         // Extract command from checkpoint if possible
         var checkpoint = context.GetCheckpoint();
         if (checkpoint is not null)
@@ -60,8 +61,7 @@ public abstract class CommandBehaviorBase : IBehavior
             }
         }
         
-        var mentionCheckpoint =  context.GetCheckpoint(typeof(MentionBehavior).FullName!);
-        if (mentionCheckpoint is { Name: "BotMentioned" })
+        if (checkpoint is { Name: "BotMentioned" })
             context.ResetCheckpoint();
         
         using var scope = _scopeFactory.CreateScope();

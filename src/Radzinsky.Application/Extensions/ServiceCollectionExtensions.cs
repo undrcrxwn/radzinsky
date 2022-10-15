@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration) =>
         services
             .AddMemoryCache()
-            .AddMapsterConfiguration()
+            .AddMapsterConfiguration(configuration)
             .AddHangfire(configuration)
             .AddBehaviorsAndResources()
             .AddCommandsAndResources()
@@ -47,12 +47,35 @@ public static class ServiceCollectionExtensions
             .AddSingleton<INewsService, PanoramaNewsService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
             .AddSingleton<ICalculator, Calculator>()
-            .AddSingleton<IHashingService, MD5HashingService>()
+            .AddSingleton<IHashingService, Md5HashingService>()
+            .AddSingleton<IReplyMemoryService, ReplyMemoryService>()
+            .AddScoped<IStateService, StateService>()
             .AddScoped<BehaviorContext>()
             .AddScoped<CommandContext>();
 
-    private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
+        var keyLength = configuration.GetValue<int>("Callbacks:CallbackHandlerKeyLength");
+        
+        TypeAdapterConfig<Telegram.Bot.Types.Update, UpdateDto>.NewConfig()
+            .Map(
+                destination => destination.CallbackQuery,
+                source => source.CallbackQuery == null
+                    ? null
+                    : source.CallbackQuery.Adapt<CallbackQueryDto>());
+
+        TypeAdapterConfig<Telegram.Bot.Types.CallbackQuery, CallbackQueryDto>.NewConfig()
+            .Map(
+                destination => destination.CallbackHandlerTypeNameHash,
+                source => source.Data == null
+                    ? null
+                    : source.Data.Substring(0, keyLength))
+            .Map(
+                destination => destination.CallbackHandlerTypeNameHash,
+                source => source.Data == null
+                    ? null
+                    : source.Data.Substring(keyLength));
+        
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
                 destination => destination.Sender,
@@ -82,7 +105,10 @@ public static class ServiceCollectionExtensions
         };
 
         foreach (var implementation in implementations)
+        {
             services.AddScoped(typeof(IBehavior), implementation);
+            services.AddScoped(implementation, implementation);
+        }
 
         var behaviorTypes = GetImplementationsOf<IBehavior>();
         foreach (var behaviorType in behaviorTypes)

@@ -46,7 +46,7 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
         // Parse mention
         var mention = _parser.TryParseMentionFromBeginning(commandContext.Payload);
         if (mention is null &&
-            checkpoint!.Name == "BotMentioned" &&
+            checkpoint?.Name != "BotMentioned" &&
             !commandContext.Message.IsReplyToMe &&
             !commandContext.Message.IsPrivate)
         {

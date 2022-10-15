@@ -16,12 +16,14 @@ public class EditBioCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is CommandCheckpoint)
+        var checkpoint = context.GetCheckpoint();
+        
+        if (checkpoint?.HandlerTypeName.EndsWith("Command") ?? false)
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("TellBio"));
-            context.SetCommandCheckpoint("TellBio");
+            context.SetCheckpoint("TellBio");
             return;
         }
 
