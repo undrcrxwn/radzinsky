@@ -49,6 +49,7 @@ public class MessageContext
 
     public bool Authorize(ChatMember member, MemberPermissions permission)
     {
-        return 
+        var hasRolePermission = member.Role?.Permissions.Contains(permission) ?? false;
+        return member.IsChatAdministrator || hasRolePermission;
     }
 }
