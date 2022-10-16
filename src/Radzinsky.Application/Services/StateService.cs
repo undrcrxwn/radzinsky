@@ -11,14 +11,18 @@ public class StateService : IStateService
     public StateService(ApplicationDbContext dbContext) =>
         _dbContext = dbContext;
 
-    public async Task<T?> ReadStateAsync<T>(string key) where T : State =>
-        await FindEntryAsync(key) as T;
+    public async Task<T?> ReadStateAsync<T>(string key) where T : class =>
+        (await FindEntryAsync(key))?.Payload as T;
 
-    public async Task WriteStateAsync(State state)
+    public async Task WriteStateAsync(string key, object payload)
     {
-        if (await FindEntryAsync(state.Key) is null)
-            await _dbContext.States.AddAsync(state);
-
+        var entry = await FindEntryAsync(key);
+        
+        if (entry is null)
+            await _dbContext.States.AddAsync(new State(key, payload));
+        else
+            entry.Payload = payload;
+        
         await _dbContext.SaveChangesAsync();
     }
 

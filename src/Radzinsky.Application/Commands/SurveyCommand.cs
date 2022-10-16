@@ -2,14 +2,16 @@
 using Radzinsky.Application.Delegates;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Services;
-using Radzinsky.Domain.Models.Entities;
-using Radzinsky.Domain.Models.Entities.States;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Radzinsky.Application.Commands;
 
 public class SurveyCommand : ICommand, ICallbackQueryHandler
 {
+    private record SurveyState(
+        int? MatrixCellId = null,
+        int? Rating = null);
+
     private readonly IStateService _states;
     private readonly IHashingService _hasher;
 
@@ -22,7 +24,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
     public async Task HandleCallbackQueryAsync(CallbackQueryContext context, CancellationToken token)
     {
         ParseCallbackData(context.Query.Data, out var respondentUserId, out var callbackKey, out _);
-        
+
         if (respondentUserId != context.Update.InteractorUserId!.Value)
         {
             await context.ReplyAsync("This survey is not for you!");
@@ -35,10 +37,10 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
             "Rating" => HandleRatingCallbackAsync,
             _ => throw new InvalidOperationException()
         };
-        
+
         await callbackQueryHandler(context);
     }
-    
+
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
         var respondentUserId = context.Update.InteractorUserId!.Value;
@@ -49,9 +51,9 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
             await context.ReplyAsync("You are already participating in this survey.");
             return;
         }
-        
-        await _states.WriteStateAsync(new SurveyState(stateKey));
-            
+
+        await _states.WriteStateAsync(stateKey, new SurveyState());
+
         await context.ReplyAsync("Ok! Now answer some questions for the survey.");
         await AskForMatrixCellAsync(context, respondentUserId);
     }
@@ -59,7 +61,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
     private async Task AskForMatrixCellAsync(CommandContext context, long respondentUserId)
     {
         var factory = new ButtonFactory(_hasher, nameof(SurveyCommand), "Cell {0}");
-        
+
         var buttons = new List<List<InlineKeyboardButton>>
         {
             new()
@@ -91,16 +93,15 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
             return;
         }
 
-        state.MatrixCellId = int.Parse(payload);
-        await _states.WriteStateAsync(state);
-        
+        await _states.WriteStateAsync(stateKey, state with { MatrixCellId = int.Parse(payload) });
+
         await AskForRatingAsync(context, respondentUserId);
     }
 
     private async Task AskForRatingAsync(CallbackQueryContext context, long respondentUserId)
     {
         var factory = new ButtonFactory(_hasher, nameof(SurveyCommand), "Rating {0}");
-        
+
         var buttons = new List<List<InlineKeyboardButton>>
         {
             Enumerable.Range(1, 5)
@@ -112,10 +113,10 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
                 .Select(x => factory.CreateCallbackDataButton(x.Label, x.Data))
                 .ToList()
         };
-        
+
         await context.ReplyAsync("2. Rate us 1 to 5.", replyMarkup: new InlineKeyboardMarkup(buttons));
     }
-    
+
     private async Task HandleRatingCallbackAsync(CallbackQueryContext context)
     {
         ParseCallbackData(context.Query.Data, out var respondentUserId, out _, out var payload);
@@ -128,13 +129,12 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
             await context.ReplyAsync("You've already decided on rating!");
             return;
         }
-        
-        state.Rating = int.Parse(payload);
-        await _states.WriteStateAsync(state);
+
+        await _states.WriteStateAsync(stateKey, state with { Rating = int.Parse(payload) });
 
         await ShowResultsAsync(context, state);
     }
-    
+
     private async Task ShowResultsAsync(CallbackQueryContext context, SurveyState state)
     {
         const string replyTemplate = "Thanks for your time! You've just chosen cell {0} and rated us for {1}.";
