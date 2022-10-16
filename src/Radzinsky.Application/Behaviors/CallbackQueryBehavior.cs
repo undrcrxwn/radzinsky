@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Commands;
 using Radzinsky.Application.Delegates;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
@@ -8,18 +9,15 @@ namespace Radzinsky.Application.Behaviors;
 
 public class CallbackQueryBehavior : IBehavior
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEnumerable<ICallbackQueryHandler> _callbackQueryHandlers;
     private readonly CallbackQueryContext _callbackQueryContext;
     private readonly IHashingService _hasher;
 
     public CallbackQueryBehavior(
-        IServiceScopeFactory scopeFactory,
         IEnumerable<ICallbackQueryHandler> callbackQueryHandlers,
         CallbackQueryContext callbackQueryContext,
         IHashingService hasher)
     {
-        _scopeFactory = scopeFactory;
         _callbackQueryHandlers = callbackQueryHandlers;
         _callbackQueryContext = callbackQueryContext;
         _hasher = hasher;
@@ -33,6 +31,7 @@ public class CallbackQueryBehavior : IBehavior
             return;
         }
 
+        _callbackQueryContext.Update = context.Update;
         _callbackQueryContext.Query = context.Update.CallbackQuery!;
 
         var callbackQueryHandler = _callbackQueryHandlers.First(x =>

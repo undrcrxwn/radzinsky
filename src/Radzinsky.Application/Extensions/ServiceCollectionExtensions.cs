@@ -51,7 +51,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IReplyMemoryService, ReplyMemoryService>()
             .AddScoped<IStateService, StateService>()
             .AddScoped<BehaviorContext>()
-            .AddScoped<CommandContext>();
+            .AddScoped<CommandContext>()
+            .AddScoped<CallbackQueryContext>();
 
     private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
@@ -71,10 +72,13 @@ public static class ServiceCollectionExtensions
                     ? null
                     : source.Data.Substring(0, keyLength))
             .Map(
-                destination => destination.CallbackHandlerTypeNameHash,
+                destination => destination.Data,
                 source => source.Data == null
                     ? null
-                    : source.Data.Substring(keyLength));
+                    : source.Data.Substring(keyLength))
+            .Map(
+                destination => destination.Sender,
+                source => source.From.Adapt<UserDto>());
         
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
@@ -97,6 +101,7 @@ public static class ServiceCollectionExtensions
         var implementations = new[]
         {
             typeof(ErrorBehavior),
+            typeof(CallbackQueryBehavior),
             typeof(SlashCommandBehavior),
             typeof(LinguisticCommandBehavior),
             typeof(MentionBehavior),

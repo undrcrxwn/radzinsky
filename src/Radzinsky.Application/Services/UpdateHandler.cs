@@ -80,10 +80,16 @@ public class UpdateHandler : IUpdateHandler
     private void FillBehaviorContext(BehaviorContext context, Update update)
     {
         context.Update = update.Adapt<UpdateDto>();
-        context.Update.Message!.NormalizedText = _keyboardLayoutTranslator.Translate(context.Update.Message!.Text);
-        context.Update.Message.IsReplyToMe = context.Update.Message.ReplyTarget?.Sender.Id == _bot.BotId;
-        context.Update.Message.IsPrivate = update.Message!.Chat.Type == ChatType.Private;
-        context.Update.Message.StartsWithMyName =
-            _parser.TryParseMentionFromBeginning(context.Update.Message.NormalizedText) is not null;
+
+        if (update.Message is not null)
+        {
+            context.Update.Message!.NormalizedText = _keyboardLayoutTranslator.Translate(context.Update.Message!.Text);
+            context.Update.Message.IsReplyToMe = context.Update.Message.ReplyTarget?.Sender.Id == _bot.BotId;
+            context.Update.Message.IsPrivate = update.Message!.Chat.Type == ChatType.Private;
+            context.Update.Message.StartsWithMyName =
+                _parser.TryParseMentionFromBeginning(context.Update.Message.NormalizedText) is not null;
+        }
+
+        context.Update.CallbackQuery = update.CallbackQuery?.Adapt<CallbackQueryDto>();
     }
 }

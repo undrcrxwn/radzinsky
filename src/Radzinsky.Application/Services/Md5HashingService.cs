@@ -16,7 +16,6 @@ public class Md5HashingService : IHashingService
     {
         var hashBytes = MD5.HashData(Encoding.UTF8.GetBytes(key));
         return string.Join(string.Empty, hashBytes
-            .Select(x => x.ToString("x2"))
-            .Take(_keyLength));
+            .Select(x => x.ToString("x2")))[.._keyLength];
     }
 }

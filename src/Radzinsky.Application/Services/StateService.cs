@@ -1,4 +1,6 @@
-﻿using Radzinsky.Application.Abstractions;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Radzinsky.Application.Abstractions;
 using Radzinsky.Domain.Models.Entities;
 using Radzinsky.Persistence;
 
@@ -11,18 +13,34 @@ public class StateService : IStateService
     public StateService(ApplicationDbContext dbContext) =>
         _dbContext = dbContext;
 
-    public async Task<T?> ReadStateAsync<T>(string key) where T : class =>
-        (await FindEntryAsync(key))?.Payload as T;
+    public async Task<T?> ReadStateAsync<T>(string key) where T : class
+    {
+        var entry = await FindEntryAsync(key);
+        return entry is not null
+            ? JsonConvert.DeserializeObject<T>(entry.Payload)
+            : null;
+    }
 
     public async Task WriteStateAsync(string key, object payload)
     {
         var entry = await FindEntryAsync(key);
-        
+        var serializedPayload = JsonConvert.SerializeObject(payload);
+
         if (entry is null)
-            await _dbContext.States.AddAsync(new State(key, payload));
+            await _dbContext.States.AddAsync(new State(key, serializedPayload));
         else
-            entry.Payload = payload;
+            entry.Payload = serializedPayload;
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task ResetStateAsync(string key)
+    {
+        var entry = await FindEntryAsync(key);
         
+        if (entry is not null)
+            _dbContext.States.Remove(entry);
+
         await _dbContext.SaveChangesAsync();
     }
 

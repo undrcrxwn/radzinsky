@@ -5,11 +5,11 @@ namespace Radzinsky.Domain.Models.Entities;
 public class State
 {
     [Key] public string Key { get; set; }
-    public object Payload { get; set; }
+    public string Payload { get; set; }
 
     private State() { }
 
-    public State(string key, object payload)
+    public State(string key, string payload)
     {
         Key = key;
         Payload = payload;

@@ -1,17 +1,17 @@
-﻿using Microsoft.Extensions.Configuration;
-using Radzinsky.Application.Abstractions;
+﻿using Radzinsky.Application.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Radzinsky.Application.Services;
 
-public class ButtonFactory : IButtonFactory
+public class ButtonFactory<THandler> : IButtonFactory
+    where THandler : ICallbackQueryHandler
 {
     private readonly string _callbackHandlerTypeNameHash;
     private readonly string _dataFormat;
 
-    public ButtonFactory(IHashingService hasher, string callbackHandlerTypeName, string? dataFormat = null)
+    public ButtonFactory(IHashingService hasher, string? dataFormat = null)
     {
-        _callbackHandlerTypeNameHash = hasher.HashKey(callbackHandlerTypeName);
+        _callbackHandlerTypeNameHash = hasher.HashKey(typeof(THandler).FullName!);
         _dataFormat = dataFormat ?? "{0}";
     }
 

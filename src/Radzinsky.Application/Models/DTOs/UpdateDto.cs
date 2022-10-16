@@ -8,6 +8,11 @@ public class UpdateDto
     public MessageDto? Message;
     public CallbackQueryDto? CallbackQuery;
     
-    public long? InteractorUserId => Message?.Sender.Id;
-    public long? ChatId => Message?.Chat.Id;
+    public long? InteractorUserId =>
+        Message?.Sender.Id ??
+        CallbackQuery?.Sender.Id;
+    
+    public long? ChatId =>
+        Message?.Chat.Id ??
+        CallbackQuery?.Message.Chat.Id;
 }
