@@ -10,7 +10,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Chat> Chats { get; set; } = null!;
     public DbSet<ChatMember> ChatMembers { get; set; } = null!;
     public DbSet<ChatPortal> ChatPortals { get; set; } = null!;
-    public DbSet<ChatMemberRole> MemberRoles { get; set; } = null!;
+    public DbSet<Role> Roles { get; set; } = null!;
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }

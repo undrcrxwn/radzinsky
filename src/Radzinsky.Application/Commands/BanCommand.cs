@@ -1,5 +1,11 @@
-﻿using Radzinsky.Application.Abstractions;
+﻿using Mapster;
+using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Models.AuthorizationResults;
 using Radzinsky.Application.Models.Contexts;
+using Radzinsky.Domain.Enumerations;
+using Radzinsky.Domain.Models.Entities;
+using Radzinsky.Persistence;
+using Radzinsky.Persistence.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -7,9 +13,23 @@ namespace Radzinsky.Application.Commands;
 
 public class BanCommand : ICommand
 {
+    private readonly ITelegramBotClient _bot;
+    private readonly IAuthorizationService _authorization;
+    private readonly ApplicationDbContext _dbContext;
+
+    public BanCommand(
+        ITelegramBotClient bot,
+        IAuthorizationService authorization,
+        ApplicationDbContext dbContext)
+    {
+        _bot = bot;
+        _authorization = authorization;
+        _dbContext = dbContext;
+    }
+
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId)
+        if (context.Update.InteractorUserId == _bot.BotId)
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanMe"));
             return;
@@ -27,30 +47,47 @@ public class BanCommand : ICommand
             return;
         }
 
-        var sender = await context.Bot.GetChatMemberAsync(
-            context.Message.Chat.Id, context.Message.Sender.Id);
-        
-        var target = await context.Bot.GetChatMemberAsync(
-            context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
+        var authorizationResult = await _authorization.AuthorizeAgainstAsync(
+            context.Update.InteractorUserId!.Value,
+            context.Message.ReplyTarget.Id,
+            context.Update.ChatId!.Value,
+            ChatMemberPermissions.BanLowerPriorities);
 
-        if (sender.Status is not ChatMemberStatus.Creator and not ChatMemberStatus.Administrator)
+        switch (authorizationResult)
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("NotAnAdmin"));
-            return;
-        }
+            case NoPermission:
+                await context.ReplyAsync(context.Resources!.GetRandom("NoPermission"));
+                break;
+            
+            case FailedAgainstSuperadmin:
+                await context.ReplyAsync(context.Resources!.GetRandom("FailedAgainstSuperadmin"));
+                break;
+            
+            case PriorityDifference difference:
+                await context.ReplyAsync(context.Resources!.GetRandom("PriorityDifference",
+                    difference.ActualPriority, difference.TargetPriority));
+                break;
+            
+            case Failure:
+                await context.ReplyAsync(context.Resources!.GetRandom("Failure"));
+                break;
+            
+            case Success:
+                await _bot.BanChatMemberAsync(
+                    context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
 
-        if (target.Status is ChatMemberStatus.Creator or ChatMemberStatus.Administrator)
-        {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanAdmin"));
-            return;
-        }
-
-        await context.Bot.BanChatMemberAsync(
-            context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
-
-        var response = context.Resources!.GetRandom(
-            "UserBanned", context.Message.ReplyTarget.Sender.FirstName);
+                var response = context.Resources!.GetRandom(
+                    "Success", context.Message.ReplyTarget.Sender.FirstName);
         
-        await context.ReplyAsync(response);
+                await context.ReplyAsync(response);
+                break;
+            
+            case Undefined:
+                await context.ReplyAsync(context.Resources!.GetRandom("Undefined"));
+                break;
+            
+            default:
+                throw new InvalidOperationException();
+        }
     }
 }
