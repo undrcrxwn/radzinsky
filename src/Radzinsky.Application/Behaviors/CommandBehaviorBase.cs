@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
+using Radzinsky.Application.Models.DTOs;
+using Telegram.Bot.Types.Enums;
 
-namespace Radzinsky.Application.Behaviors.Base;
+namespace Radzinsky.Application.Behaviors;
 
 public abstract class CommandBehaviorBase : IBehavior
 {
@@ -12,31 +13,43 @@ public abstract class CommandBehaviorBase : IBehavior
     private readonly IResourcesService _resources;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly CommandContext _commandContext;
+    private readonly ICheckpointMemoryService _checkpoints;
 
     public CommandBehaviorBase(
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
-        CommandContext commandContext)
+        CommandContext commandContext,
+        ICheckpointMemoryService checkpoints)
     {
         _commands = commands;
         _resources = resources;
         _scopeFactory = scopeFactory;
         _commandContext = commandContext;
+        _checkpoints = checkpoints;
     }
 
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
+        if (context.Update.Type != UpdateType.Message)
+        {
+            await next(context);
+            return;
+        }
+        
+        var message = context.Update.Message!;
+        
         // Fill command context
-        _commandContext.Message = context.Message;
-        _commandContext.Checkpoint = context.Checkpoint;
+        _commandContext.Update = context.Update;
+        _commandContext.Message = message;
 
         // Extract command from checkpoint if possible
-        if (_commandContext.Checkpoint is CommandCheckpoint commandCheckpoint)
+        var checkpoint = context.GetCheckpoint();
+        if (checkpoint is not null)
         {
-            _commandContext.Payload = context.Message.NormalizedText;
-            _commandContext.CommandTypeName = commandCheckpoint.CommandTypeName;
-            _commandContext.Resources = _resources.GetCommandResources(_commandContext.CommandTypeName);
+            _commandContext.Payload = message.NormalizedText;
+            _commandContext.HandlerTypeName = checkpoint.HandlerTypeName;
+            _commandContext.Resources = _resources.GetCommandResources(_commandContext.HandlerTypeName);
         }
         else
         {
@@ -48,11 +61,11 @@ public abstract class CommandBehaviorBase : IBehavior
             }
         }
         
-        if (context.Checkpoint is MentionCheckpoint)
+        if (checkpoint is { Name: "BotMentioned" })
             context.ResetCheckpoint();
         
         using var scope = _scopeFactory.CreateScope();
-        var command = _commands.GetCommandInstance(scope, _commandContext.CommandTypeName);
+        var command = _commands.GetCommandInstance(scope, _commandContext.HandlerTypeName);
         await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
     }
 

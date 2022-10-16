@@ -2,7 +2,7 @@
 
 namespace Radzinsky.Application.Models.Resources;
 
-public class CommonResources : Resources
+public class CommonResources : ResourcesBase
 {
     public CommonResources(JObject data)
         : base(data) { }

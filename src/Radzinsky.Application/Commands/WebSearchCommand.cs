@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
 
@@ -17,12 +16,10 @@ public class WebSearchCommand : ICommand
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is CommandCheckpoint)
-            context.ResetCheckpoint();
-        else if (string.IsNullOrWhiteSpace(context.Payload))
+        if (string.IsNullOrWhiteSpace(context.Payload))
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("SearchWhat"));
-            context.SetCommandCheckpoint("SearchWhat");
+            context.SetCheckpoint("SearchWhat");
             return;
         }
         
@@ -57,6 +54,6 @@ public class WebSearchCommand : ICommand
 
         // Send reply
         cancellationToken.ThrowIfCancellationRequested();
-        await context.ReplyAsync(text, ParseMode.Html, true);
+        await context.ReplyAsync(text, ParseMode.Html, disableWebPagePreview: true);
     }
 }

@@ -7,9 +7,13 @@ namespace Radzinsky.Application.Commands;
 
 public class BanCommand : ICommand
 {
+    private readonly ITelegramBotClient _bot;
+    
+    public BanCommand(ITelegramBotClient bot) => _bot = bot;
+    
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Message.ReplyTarget?.Sender.Id == context.Bot.BotId)
+        if (context.Message.ReplyTarget?.Sender.Id == _bot.BotId)
         {
             await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanMe"));
             return;
@@ -27,10 +31,10 @@ public class BanCommand : ICommand
             return;
         }
 
-        var sender = await context.Bot.GetChatMemberAsync(
+        var sender = await _bot.GetChatMemberAsync(
             context.Message.Chat.Id, context.Message.Sender.Id);
         
-        var target = await context.Bot.GetChatMemberAsync(
+        var target = await _bot.GetChatMemberAsync(
             context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
 
         if (sender.Status is not ChatMemberStatus.Creator and not ChatMemberStatus.Administrator)
@@ -45,7 +49,7 @@ public class BanCommand : ICommand
             return;
         }
 
-        await context.Bot.BanChatMemberAsync(
+        await _bot.BanChatMemberAsync(
             context.Message.Chat.Id, context.Message.ReplyTarget.Sender.Id);
 
         var response = context.Resources!.GetRandom(

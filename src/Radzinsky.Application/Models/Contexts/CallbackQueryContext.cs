@@ -1,16 +1,17 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Telegram.Bot;
 
 namespace Radzinsky.Application.Models.Contexts;
 
-public class BehaviorContext : ContextBase<BehaviorResources>
+public class CallbackQueryContext : ContextBase<ResourcesBase>
 {
-    public BehaviorContext(
+    public CallbackQueryDto Query = null!;
+    
+    public CallbackQueryContext(
         ITelegramBotClient bot,
-        ICheckpointMemoryService checkpoint,
+        ICheckpointMemoryService checkpoints,
         IReplyMemoryService replies)
-        : base(bot, checkpoint, replies) { }
+        : base(bot, checkpoints, replies) { }
 }
