@@ -45,7 +45,7 @@ public class BanCommand : ICommand
 
         var authorizationResult = await _authorization.AuthorizeAgainstAsync(
             context.Update.InteractorUserId!.Value,
-            context.Message.ReplyTarget.Id,
+            context.Message.ReplyTarget.Sender.Id,
             context.Update.ChatId!.Value,
             ChatMemberPermissions.BanLowerPriorities);
 

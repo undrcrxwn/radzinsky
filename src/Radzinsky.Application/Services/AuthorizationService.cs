@@ -48,10 +48,10 @@ public class AuthorizationService : IAuthorizationService
 
         var chat = await _dbContext.Chats.FindOrAddAsync(chatId, () => new Chat(chatId));
         
-        var targetMember = await _dbContext.ChatMembers.FindAsync(targetId);
+        var targetMember = await _dbContext.ChatMembers.FindAsync(chatId, targetId);
         var targetRole = targetMember?.Role ?? chat.DefaultRole;
         
-        var userMember = await _dbContext.ChatMembers.FindAsync(userId);
+        var userMember = await _dbContext.ChatMembers.FindAsync(chatId, userId);
         var userRole = userMember?.Role ?? chat.DefaultRole;
 
         var result = Authorize(userRole, chat.Roles, permission);
