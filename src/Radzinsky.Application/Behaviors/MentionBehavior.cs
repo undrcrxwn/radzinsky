@@ -32,6 +32,6 @@ public class MentionBehavior : IBehavior
         }
 
         context.SetCheckpoint("BotMentioned");
-        await context.ReplyAsync(context.Resources!.GetRandom<string>("AtYourService"));
+        await context.SendTextAsync(context.Resources!.GetRandom<string>("AtYourService"));
     }
 }

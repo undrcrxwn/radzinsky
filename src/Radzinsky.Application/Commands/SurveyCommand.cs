@@ -186,13 +186,13 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         if (state is null)
         {
-            await context.ReplyAsync("This survey has expired!");
+            await context.ShowAlertAsync("This survey has expired!");
             return;
         }
         
         if (state.RespondentUserId != context.Update.InteractorUserId!.Value)
         {
-            await context.ReplyAsync("This survey is not for you!");
+            await context.ShowAlertAsync("This survey is not for you!");
             return;
         }
 
@@ -213,14 +213,14 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         if (await _states.ReadStateAsync<SurveyState>(stateKey) is not null)
         {
-            await context.ReplyAsync("You are already participating in this survey.");
+            await context.SendTextAsync("You are already participating in this survey.");
             return;
         }
 
         var state = new SurveyState(context.Update.InteractorUserId!.Value);
         await _states.WriteStateAsync(stateKey, state);
 
-        await context.ReplyAsync("Ok! Now answer some questions for the survey.");
+        await context.SendTextAsync("Ok! Now answer some questions for the survey.");
         await AskForMatrixCellAsync(context, surveyId);
     }
 
@@ -242,7 +242,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
             }
         };
 
-        await context.ReplyAsync("1. Choose a random matrix cell.",
+        await context.SendTextAsync("1. Choose a random matrix cell.",
             replyMarkup: new InlineKeyboardMarkup(buttons));
     }
 
@@ -255,7 +255,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         if (state!.MatrixCellId is not null)
         {
-            await context.ReplyAsync("You've already decided on your matrix cell!");
+            await context.ShowAlertAsync("You've already decided on your matrix cell!");
             return;
         }
 
@@ -280,7 +280,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
                 .ToList()
         };
 
-        await context.ReplyAsync("2. Rate us 1 to 5.", replyMarkup: new InlineKeyboardMarkup(buttons));
+        await context.SendTextAsync("2. Rate us 1 to 5.", replyMarkup: new InlineKeyboardMarkup(buttons));
     }
 
     private async Task HandleRatingCallbackAsync(CallbackQueryContext context)
@@ -292,7 +292,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         if (state!.Rating is not null)
         {
-            await context.ReplyAsync("You've already decided on rating!");
+            await context.ShowAlertAsync("You've already decided on rating!");
             return;
         }
 
@@ -307,7 +307,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
         var state = await _states.ReadStateAsync<SurveyState>(stateKey);
         
         const string replyTemplate = "Thanks for your time! You've just chosen cell #{0} and rated us for {1}.";
-        await context.ReplyAsync(string.Format(replyTemplate, state!.MatrixCellId, state.Rating));
+        await context.SendTextAsync(string.Format(replyTemplate, state!.MatrixCellId, state.Rating));
 
         await _states.ResetStateAsync(stateKey);
     }

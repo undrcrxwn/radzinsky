@@ -20,17 +20,17 @@ public class CalculateCommand : ICommand
             string.IsNullOrWhiteSpace(context.Payload))
         {
             context.SetCheckpoint("WaitingForExpression");
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
             return;
         }
 
         if (!_calculator.CanCalculate(context.Payload))
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("InvalidSyntax"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("InvalidSyntax"));
             return;
         }
 
         var result = _calculator.Calculate(context.Payload);
-        await context.ReplyAsync(result.ToString(CultureInfo.InvariantCulture));
+        await context.SendTextAsync(result.ToString(CultureInfo.InvariantCulture));
     }
 }

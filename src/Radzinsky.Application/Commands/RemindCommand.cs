@@ -16,6 +16,6 @@ public class RemindCommand : ICommand
                 context.Message.Sender.FirstName,
                 context.Payload), TimeSpan.FromMinutes(5));
 
-        await context.ReplyAsync(context.Resources!.GetRandom<string>("ReminderSet"));
+        await context.SendTextAsync(context.Resources!.GetRandom<string>("ReminderSet"));
     }
 }

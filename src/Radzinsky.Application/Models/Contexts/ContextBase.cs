@@ -113,7 +113,7 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
 
     #endregion
 
-    public async ValueTask<int> ReplyAsync(
+    public async ValueTask<int> SendTextAsync(
         string text,
         ParseMode? parseMode = null,
         IReplyMarkup? replyMarkup = null,

@@ -24,7 +24,7 @@ public class NewsCommand : ICommand
         });
 
         await context.DeletePreviousReplyAsync();
-        await context.ReplyAsync(response);
+        await context.SendTextAsync(response);
     }
     
     private async Task<string> GetWebScrappedResponseAsync()

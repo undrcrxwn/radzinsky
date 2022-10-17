@@ -25,7 +25,7 @@ public class MisunderstandingBehavior : IBehavior
             if (isBotMentioned)
                 context.ResetCheckpoint();
             
-            await context.ReplyAsync(context.Resources!.GetRandom("CannotUnderstandYou"));
+            await context.SendTextAsync(context.Resources!.GetRandom("CannotUnderstandYou"));
             return;
         }
 

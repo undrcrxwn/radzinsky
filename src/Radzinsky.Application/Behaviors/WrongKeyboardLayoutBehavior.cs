@@ -16,6 +16,6 @@ public class WrongKeyboardLayoutBehavior : IBehavior
 
         var format = context.Resources!.GetRandom<string>("ProbablyMeant");
         var response = string.Format(format, context.Update.Message.Sender.FirstName, context.Update.Message.NormalizedText);
-        await context.ReplyAsync(response);
+        await context.SendTextAsync(response);
     }
 }

@@ -18,7 +18,7 @@ public class WebSearchCommand : ICommand
     {
         if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("SearchWhat"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("SearchWhat"));
             context.SetCheckpoint("SearchWhat");
             return;
         }
@@ -54,6 +54,6 @@ public class WebSearchCommand : ICommand
 
         // Send reply
         cancellationToken.ThrowIfCancellationRequested();
-        await context.ReplyAsync(text, ParseMode.Html, disableWebPagePreview: true);
+        await context.SendTextAsync(text, ParseMode.Html, disableWebPagePreview: true);
     }
 }

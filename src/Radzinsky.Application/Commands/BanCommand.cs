@@ -31,19 +31,19 @@ public class BanCommand : ICommand
     {
         if (context.Update.InteractorUserId == _bot.BotId)
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanMe"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("CannotBanMe"));
             return;
         }
         
         if (context.Message.IsPrivate)
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("CannotBanInPrivateChat"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("CannotBanInPrivateChat"));
             return;
         }
         
         if (context.Message.ReplyTarget is null)
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("NoReplyTarget"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("NoReplyTarget"));
             return;
         }
 
@@ -56,20 +56,20 @@ public class BanCommand : ICommand
         switch (authorizationResult)
         {
             case NoPermission:
-                await context.ReplyAsync(context.Resources!.GetRandom("NoPermission"));
+                await context.SendTextAsync(context.Resources!.GetRandom("NoPermission"));
                 break;
             
             case FailedAgainstSuperadmin:
-                await context.ReplyAsync(context.Resources!.GetRandom("FailedAgainstSuperadmin"));
+                await context.SendTextAsync(context.Resources!.GetRandom("FailedAgainstSuperadmin"));
                 break;
             
             case PriorityDifference difference:
-                await context.ReplyAsync(context.Resources!.GetRandom("PriorityDifference",
+                await context.SendTextAsync(context.Resources!.GetRandom("PriorityDifference",
                     difference.ActualPriority, difference.TargetPriority));
                 break;
             
             case Failure:
-                await context.ReplyAsync(context.Resources!.GetRandom("Failure"));
+                await context.SendTextAsync(context.Resources!.GetRandom("Failure"));
                 break;
             
             case Success:
@@ -79,11 +79,11 @@ public class BanCommand : ICommand
                 var response = context.Resources!.GetRandom(
                     "Success", context.Message.ReplyTarget.Sender.FirstName);
         
-                await context.ReplyAsync(response);
+                await context.SendTextAsync(response);
                 break;
             
             case Undefined:
-                await context.ReplyAsync(context.Resources!.GetRandom("Undefined"));
+                await context.SendTextAsync(context.Resources!.GetRandom("Undefined"));
                 break;
             
             default:

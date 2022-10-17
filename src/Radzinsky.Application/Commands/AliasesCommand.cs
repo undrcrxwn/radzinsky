@@ -20,7 +20,7 @@ public class AliasesCommand : ICommand
         var alias = _parser.TryParseCommandAliasFromBeginning(context.Payload);
         if (alias is null)
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("CommandNotFound"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("CommandNotFound"));
             return;
         }
 
@@ -28,7 +28,7 @@ public class AliasesCommand : ICommand
             .First(x => x.Aliases.Contains(alias.Case))
             .Aliases.ToArray();
         
-        await context.ReplyAsync(aliases.Any()
+        await context.SendTextAsync(aliases.Any()
             ? string.Join('\n', aliases)
             : context.Resources!.GetRandom<string>("SingleAlias"));
     }
