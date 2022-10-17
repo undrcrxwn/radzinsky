@@ -43,27 +43,14 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
         SetCheckpoint(checkpoint, duration);
     }
 
-    public void SetCheckpoint(Checkpoint checkpoint, TimeSpan? duration = null)
-    {
-        if (Update.InteractorUserId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
-
-        _checkpoints.SetCheckpoint(Update.InteractorUserId.Value, checkpoint, duration);
-    }
+    public void SetCheckpoint(Checkpoint checkpoint, TimeSpan? duration = null) =>
+        _checkpoints.SetCheckpoint(Update.InteractorUserId!.Value, checkpoint, duration);
 
     public Checkpoint<TPayload>? GetLocalCheckpoint<TPayload>() =>
         GetLocalCheckpoint() as Checkpoint<TPayload>;
 
-    public Checkpoint? GetLocalCheckpoint()
-    {
-        if (Update.InteractorUserId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.InteractorUserId)}' specified by the context.");
-
-        if (Update.ChatId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-
-        return _checkpoints.GetLocalCheckpoint(Update.InteractorUserId.Value, Update.ChatId.Value, HandlerTypeName);
-    }
+    public Checkpoint? GetLocalCheckpoint() =>
+        _checkpoints.GetLocalCheckpoint(Update.InteractorUserId!.Value, Update.ChatId!.Value, HandlerTypeName);
     
     public Checkpoint? GetCheckpoint<TPayload>() =>
         GetCheckpoint() as Checkpoint<TPayload>;
@@ -88,21 +75,11 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
 
     #region Replies
 
-    public void SetPreviousReplyMessageId(int messageId)
-    {
-        if (Update.ChatId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
+    public void SetPreviousReplyMessageId(int messageId) =>
+        _replies.SetPreviousReplyMessageId(HandlerTypeName, Update.ChatId!.Value, messageId);
 
-        _replies.SetPreviousReplyMessageId(HandlerTypeName, Update.ChatId.Value, messageId);
-    }
-
-    public int? GetPreviousReplyMessageId()
-    {
-        if (Update.ChatId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-
-        return _replies.TryGetPreviousReplyMessageId(HandlerTypeName, Update.ChatId.Value);
-    }
+    public int? GetPreviousReplyMessageId() =>
+        _replies.TryGetPreviousReplyMessageId(HandlerTypeName, Update.ChatId!.Value);
 
     public async Task DeletePreviousReplyAsync()
     {
@@ -113,28 +90,31 @@ public abstract class ContextBase<TResources> where TResources : ResourcesBase
 
     #endregion
 
-    public async ValueTask<int> SendTextAsync(
+    public async Task<int> SendTextAsync(
         string text,
         ParseMode? parseMode = null,
         IReplyMarkup? replyMarkup = null,
         bool? disableWebPagePreview = null)
     {
-        if (Update.ChatId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-
-        var message = await _bot.SendTextMessageAsync(Update.ChatId.Value, text, parseMode, replyMarkup: replyMarkup,
+        var message = await _bot.SendTextMessageAsync(Update.ChatId!.Value, text, parseMode, replyMarkup: replyMarkup,
             disableWebPagePreview: disableWebPagePreview ?? true);
 
         SetPreviousReplyMessageId(message.MessageId);
 
         return message.MessageId;
     }
-
-    public async Task DeleteMessageAsync(int messageId)
+    
+    public async Task EditTextAsync(
+        int messageId,
+        string text,
+        ParseMode? parseMode = null,
+        InlineKeyboardMarkup? replyMarkup = null,
+        bool? disableWebPagePreview = null)
     {
-        if (Update.ChatId is null)
-            throw new InvalidOperationException($"No '{nameof(Update.ChatId)}' specified by the context.");
-
-        await _bot.DeleteMessageAsync(Update.ChatId, messageId);
+        await _bot.EditMessageTextAsync(new ChatId(Update.ChatId!.Value), messageId, text, parseMode, replyMarkup: replyMarkup,
+            disableWebPagePreview: disableWebPagePreview);
     }
+    
+    public async Task DeleteMessageAsync(int messageId) =>
+        await _bot.DeleteMessageAsync(Update.ChatId!, messageId);
 }
