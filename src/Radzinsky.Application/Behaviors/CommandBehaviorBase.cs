@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
+using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Models.DTOs;
 using Telegram.Bot.Types.Enums;
@@ -36,18 +37,18 @@ public abstract class CommandBehaviorBase : IBehavior
             await next(context);
             return;
         }
-        
+
         var message = context.Update.Message!;
-        
+
         // Fill command context
         _commandContext.Update = context.Update;
         _commandContext.Message = message;
-
+        _commandContext.Payload = message.NormalizedText;
+        
         // Extract command from checkpoint if possible
         var checkpoint = context.GetCheckpoint();
-        if (checkpoint is not null)
+        if (checkpoint is not null && checkpoint.HandlerTypeName.EndsWith("Command"))
         {
-            _commandContext.Payload = message.NormalizedText;
             _commandContext.HandlerTypeName = checkpoint.HandlerTypeName;
             _commandContext.Resources = _resources.GetCommandResources(_commandContext.HandlerTypeName);
         }
@@ -63,7 +64,7 @@ public abstract class CommandBehaviorBase : IBehavior
         
         if (checkpoint is { Name: "BotMentioned" })
             context.ResetCheckpoint();
-        
+
         using var scope = _scopeFactory.CreateScope();
         var command = _commands.GetCommandInstance(scope, _commandContext.HandlerTypeName);
         await command.ExecuteAsync(_commandContext, new CancellationTokenSource().Token);
