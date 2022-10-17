@@ -183,8 +183,14 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
         ParseCallbackData(context.Query.Data, out var surveyId, out var callbackKey, out _);
         var stateKey = GetSurveyStateKey(surveyId);
         var state = await _states.ReadStateAsync<SurveyState>(stateKey);
+
+        if (state is null)
+        {
+            await context.ReplyAsync("This survey has expired!");
+            return;
+        }
         
-        if (state is null || state.RespondentUserId != context.Update.InteractorUserId!.Value)
+        if (state.RespondentUserId != context.Update.InteractorUserId!.Value)
         {
             await context.ReplyAsync("This survey is not for you!");
             return;
