@@ -52,8 +52,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        var surveyId = Guid.NewGuid();
-        var stateKey = GetSurveyStateKey(surveyId);
+        var stateKey = GetSurveyStateKey(context.Update.InteractorUserId!.Value);
 
         if (await _states.ReadStateAsync<SurveyState>(stateKey) is not null)
         {
@@ -65,12 +64,12 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
         await _states.WriteStateAsync(stateKey, state);
 
         await context.SendTextAsync("Ok! Now answer some questions for the survey.");
-        await AskForMatrixCellAsync(context, surveyId);
+        await AskForMatrixCellAsync(context);
     }
 
-    private async Task AskForMatrixCellAsync(CommandContext context, Guid surveyId)
+    private async Task AskForMatrixCellAsync(CommandContext context)
     {
-        var factory = new ButtonFactory<SurveyCommand>(_hasher, $"{surveyId} Cell {{0}}");
+        var factory = new ButtonFactory<SurveyCommand>(_hasher, $"{context.Update.InteractorUserId!.Value} Cell {{0}}");
 
         var buttons = new List<List<InlineKeyboardButton>>
         {
@@ -105,12 +104,12 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         await _states.WriteStateAsync(stateKey, state with { MatrixCellId = int.Parse(payload) });
 
-        await AskForRatingAsync(context, surveyId);
+        await AskForRatingAsync(context);
     }
 
-    private async Task AskForRatingAsync(CallbackQueryContext context, Guid surveyId)
+    private async Task AskForRatingAsync(CallbackQueryContext context)
     {
-        var factory = new ButtonFactory<SurveyCommand>(_hasher, $"{surveyId} Rating {{0}}");
+        var factory = new ButtonFactory<SurveyCommand>(_hasher, $"{context.Update.InteractorUserId!.Value} Rating {{0}}");
 
         var buttons = new List<List<InlineKeyboardButton>>
         {
@@ -142,12 +141,12 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
         await _states.WriteStateAsync(stateKey, state with { Rating = int.Parse(payload) });
 
-        await ShowResultsAsync(context, surveyId);
+        await ShowResultsAsync(context);
     }
 
-    private async Task ShowResultsAsync(CallbackQueryContext context, Guid surveyId)
+    private async Task ShowResultsAsync(CallbackQueryContext context)
     {
-        var stateKey = GetSurveyStateKey(surveyId);
+        var stateKey = GetSurveyStateKey(context.Update.InteractorUserId!.Value);
         var state = await _states.ReadStateAsync<SurveyState>(stateKey);
 
         const string replyTemplate = "Thanks for your time! You've just chosen cell #{0} and rated us for {1}.";
@@ -158,16 +157,16 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
 
     private static void ParseCallbackData(
         string data,
-        out Guid surveyId,
+        out long respondentUserId,
         out string callbackKey,
         out string payload)
     {
         var words = data.Split();
-        surveyId = Guid.Parse(words[0]);
+        respondentUserId = long.Parse(words[0]);
         callbackKey = words[1];
         payload = string.Join(' ', words[2..]);
     }
 
-    private string GetSurveyStateKey(Guid surveyId) =>
-        $"__Survey__{surveyId}";
+    private string GetSurveyStateKey(long respondentUserId) =>
+        $"__Survey__{respondentUserId}";
 }
