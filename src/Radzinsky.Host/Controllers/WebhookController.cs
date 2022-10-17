@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Radzinsky.Application.Abstractions;
-using Serilog;
 using Telegram.Bot.Types;
 
 namespace Radzinsky.Host.Controllers;

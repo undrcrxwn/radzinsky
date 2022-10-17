@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Radzinsky.Domain.Models.Entities;
+﻿namespace Radzinsky.Domain.Models.Entities;
 
 public class Chat
 {

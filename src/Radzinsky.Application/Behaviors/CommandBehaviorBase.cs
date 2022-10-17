@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
-using Radzinsky.Application.Models.DTOs;
 using Telegram.Bot.Types.Enums;
 
 namespace Radzinsky.Application.Behaviors;

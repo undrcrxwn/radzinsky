@@ -1,6 +1,4 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
-using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Telegram.Bot;
 

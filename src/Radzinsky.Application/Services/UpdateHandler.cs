@@ -2,7 +2,6 @@
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Application.Models.DTOs;
-using Radzinsky.Persistence;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;

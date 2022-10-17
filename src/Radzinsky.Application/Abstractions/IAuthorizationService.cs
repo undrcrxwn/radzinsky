@@ -1,6 +1,5 @@
 ﻿using Radzinsky.Application.Models.AuthorizationResults;
 using Radzinsky.Domain.Enumerations;
-using Radzinsky.Domain.Models.Entities;
 
 namespace Radzinsky.Application.Abstractions;
 

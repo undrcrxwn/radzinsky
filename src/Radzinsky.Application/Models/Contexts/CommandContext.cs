@@ -1,10 +1,7 @@
 ﻿using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.DTOs;
 using Radzinsky.Application.Models.Resources;
 using Telegram.Bot;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Radzinsky.Application.Models.Contexts;
 

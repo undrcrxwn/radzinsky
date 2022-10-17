@@ -1,6 +1,4 @@
-﻿using Radzinsky.Domain.Models.Entities;
-
-namespace Radzinsky.Application.Abstractions;
+﻿namespace Radzinsky.Application.Abstractions;
 
 public interface IStateService
 {
