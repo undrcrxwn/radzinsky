@@ -280,7 +280,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
                 .ToList()
         };
 
-        await context.SendTextAsync("2. Rate us 1 to 5.", replyMarkup: new InlineKeyboardMarkup(buttons));
+        await context.EditTextAsync(context.Query.Message.Id, "2. Rate us 1 to 5.", replyMarkup: new InlineKeyboardMarkup(buttons));
     }
 
     private async Task HandleRatingCallbackAsync(CallbackQueryContext context)
@@ -305,9 +305,9 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
     {
         var stateKey = GetSurveyStateKey(surveyId);
         var state = await _states.ReadStateAsync<SurveyState>(stateKey);
-        
+
         const string replyTemplate = "Thanks for your time! You've just chosen cell #{0} and rated us for {1}.";
-        await context.SendTextAsync(string.Format(replyTemplate, state!.MatrixCellId, state.Rating));
+        await context.EditTextAsync(context.Query.Message.Id, string.Format(replyTemplate, state!.MatrixCellId, state.Rating));
 
         await _states.ResetStateAsync(stateKey);
     }

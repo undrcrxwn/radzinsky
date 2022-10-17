@@ -83,6 +83,9 @@ public static class ServiceCollectionExtensions
         
         TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
             .Map(
+                destination => destination.Id,
+                source => source.MessageId)
+            .Map(
                 destination => destination.Sender,
                 source => source.From == null
                     ? null
