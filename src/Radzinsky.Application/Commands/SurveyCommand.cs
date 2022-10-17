@@ -184,7 +184,7 @@ public class SurveyCommand : ICommand, ICallbackQueryHandler
         var stateKey = GetSurveyStateKey(surveyId);
         var state = await _states.ReadStateAsync<SurveyState>(stateKey);
         
-        if (state!.RespondentUserId != context.Update.InteractorUserId!.Value)
+        if (state is null || state.RespondentUserId != context.Update.InteractorUserId!.Value)
         {
             await context.ReplyAsync("This survey is not for you!");
             return;
