@@ -1,5 +1,9 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Radzinsky.Domain.Enumerations;
 using Radzinsky.Domain.Models.Entities;
+using Radzinsky.Persistence.Converters;
 
 namespace Radzinsky.Persistence;
 
@@ -14,4 +18,16 @@ public class ApplicationDbContext : DbContext
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
+    
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder
+            .Entity<Role>()
+            .Property(x => x.Permissions)
+            .HasConversion<ChatMemberPermissionsCollectionConverter>();
+
+        builder
+            .Entity<ChatMember>()
+            .HasKey(x => new { x.ChatId, x.UserId });
+    }
 }
