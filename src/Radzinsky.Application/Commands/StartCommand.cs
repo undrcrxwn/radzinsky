@@ -10,6 +10,6 @@ public class StartCommand : ICommand
     {
         var response = context.Resources!.Get("Greeting", context.Message.Sender.FirstName);
         await context.DeletePreviousReplyAsync();
-        await context.ReplyAsync(response, ParseMode.Html);
+        await context.SendTextAsync(response, ParseMode.Html);
     }
 }

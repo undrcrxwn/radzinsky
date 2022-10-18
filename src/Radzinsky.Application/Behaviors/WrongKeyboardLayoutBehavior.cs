@@ -8,14 +8,14 @@ public class WrongKeyboardLayoutBehavior : IBehavior
 {
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
     {
-        if (context.Message.Text == context.Message.NormalizedText)
+        if (context.Update.Message!.Text == context.Update.Message.NormalizedText)
         {
             await next(context);
             return;
         }
 
-        var template = context.Resources!.GetRandom<string>("ProbablyMeant");
-        var response = string.Format(template, context.Message.Sender.FirstName, context.Message.NormalizedText);
-        await context.ReplyAsync(response);
+        var format = context.Resources!.GetRandom<string>("ProbablyMeant");
+        var response = string.Format(format, context.Update.Message.Sender.FirstName, context.Update.Message.NormalizedText);
+        await context.SendTextAsync(response);
     }
 }

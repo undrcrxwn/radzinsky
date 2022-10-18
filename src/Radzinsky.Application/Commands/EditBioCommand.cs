@@ -1,6 +1,5 @@
 ﻿using Mapster;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Domain.Models.Entities;
 using Radzinsky.Persistence;
@@ -17,12 +16,14 @@ public class EditBioCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is CommandCheckpoint)
+        var checkpoint = context.GetCheckpoint();
+        
+        if (checkpoint?.HandlerTypeName.EndsWith("Command") ?? false)
             context.ResetCheckpoint();
         else if (string.IsNullOrWhiteSpace(context.Payload))
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("TellBio"));
-            context.SetCommandCheckpoint("TellBio");
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("TellBio"));
+            context.SetCheckpoint("TellBio");
             return;
         }
 
@@ -33,6 +34,6 @@ public class EditBioCommand : ICommand
         sender.Bio = context.Payload;
 
         await _dbContext.SaveChangesAsync();
-        await context.ReplyAsync(context.Resources!.GetRandom<string>("BioChanged"));
+        await context.SendTextAsync(context.Resources!.GetRandom<string>("BioChanged"));
     }
 }

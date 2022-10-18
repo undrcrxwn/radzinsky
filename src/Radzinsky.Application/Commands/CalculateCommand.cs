@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Radzinsky.Application.Abstractions;
-using Radzinsky.Application.Models.Checkpoints;
 using Radzinsky.Application.Models.Contexts;
 
 namespace Radzinsky.Application.Commands;
@@ -14,21 +13,23 @@ public class CalculateCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        if (context.Checkpoint is not CommandCheckpoint &&
+        var checkpoint =  context.GetCheckpoint();
+        
+        if (checkpoint is { Name: "BotMentioned" } &&
             string.IsNullOrWhiteSpace(context.Payload))
         {
-            context.SetCommandCheckpoint("WaitingForExpression");
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
+            context.SetCheckpoint("WaitingForExpression");
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("GiveMeExpression"));
             return;
         }
 
         if (!_calculator.CanCalculate(context.Payload))
         {
-            await context.ReplyAsync(context.Resources!.GetRandom<string>("InvalidSyntax"));
+            await context.SendTextAsync(context.Resources!.GetRandom<string>("InvalidSyntax"));
             return;
         }
 
         var result = _calculator.Calculate(context.Payload);
-        await context.ReplyAsync(result.ToString(CultureInfo.InvariantCulture));
+        await context.SendTextAsync(result.ToString(CultureInfo.InvariantCulture));
     }
 }

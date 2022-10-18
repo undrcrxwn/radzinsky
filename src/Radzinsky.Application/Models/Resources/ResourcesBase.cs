@@ -4,11 +4,11 @@ using Radzinsky.Application.Extensions;
 
 namespace Radzinsky.Application.Models.Resources;
 
-public class Resources
+public abstract class ResourcesBase
 {
     private readonly JObject _data;
 
-    public Resources(JObject data) =>
+    public ResourcesBase(JObject data) =>
         _data = data;
 
     public string GetRandom(string key, params object[] args) =>

@@ -29,10 +29,11 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration) =>
         services
             .AddMemoryCache()
-            .AddMapsterConfiguration()
+            .AddMapsterConfiguration(configuration)
             .AddHangfire(configuration)
             .AddBehaviorsAndResources()
             .AddCommandsAndResources()
+            .AddCallbackQueryHandlers()
             .AddCommonResources()
             .AddLinguisticParsing()
             .AddBigramFrequencies()
@@ -40,25 +41,59 @@ public static class ServiceCollectionExtensions
             .AddScoped<IResourcesService, ResourcesService>()
             .AddSingleton<IWebSearchService, GoogleSearchService>()
             .AddTransient<IRuntimeInfoService, RuntimeInfoService>()
-            .AddSingleton<IInteractionService, InteractionService>()
+            .AddSingleton<ICheckpointMemoryService, CheckpointMemoryService>()
             .AddSingleton<ICommandsService, CommandsService>()
             .AddSingleton<IHolidaysService, HolidaysService>()
             .AddSingleton<INewsService, PanoramaNewsService>()
             .AddSingleton<IKeyboardLayoutTranslator, KeyboardLayoutTranslator>()
             .AddSingleton<ICalculator, Calculator>()
+            .AddSingleton<IHashingService, Md5HashingService>()
+            .AddSingleton<IReplyMemoryService, ReplyMemoryService>()
+            .AddScoped<IAuthorizationService, AuthorizationService>()
+            .AddScoped<IStateService, StateService>()
             .AddScoped<BehaviorContext>()
-            .AddScoped<CommandContext>();
+            .AddScoped<CommandContext>()
+            .AddScoped<CallbackQueryContext>();
 
-    private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddMapsterConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
+        var keyLength = configuration.GetValue<int>("Callbacks:CallbackHandlerKeyLength");
+        
+        TypeAdapterConfig<Telegram.Bot.Types.Update, UpdateDto>.NewConfig()
+            .Map(
+                destination => destination.CallbackQuery,
+                source => source.CallbackQuery == null
+                    ? null
+                    : source.CallbackQuery.Adapt<CallbackQueryDto>());
+
+        TypeAdapterConfig<Telegram.Bot.Types.CallbackQuery, CallbackQueryDto>.NewConfig()
+            .Map(
+                destination => destination.CallbackHandlerTypeNameHash,
+                source => source.Data == null
+                    ? null
+                    : source.Data.Substring(0, keyLength))
+            .Map(
+                destination => destination.Data,
+                source => source.Data == null
+                    ? null
+                    : source.Data.Substring(keyLength))
             .Map(
                 destination => destination.Sender,
-                source => source.From == null ? null
+                source => source.From.Adapt<UserDto>());
+        
+        TypeAdapterConfig<Telegram.Bot.Types.Message, MessageDto>.NewConfig()
+            .Map(
+                destination => destination.Id,
+                source => source.MessageId)
+            .Map(
+                destination => destination.Sender,
+                source => source.From == null
+                    ? null
                     : source.From.Adapt<UserDto>())
             .Map(
                 destination => destination.ReplyTarget,
-                source => source.ReplyToMessage == null ? null
+                source => source.ReplyToMessage == null
+                    ? null
                     : source.ReplyToMessage.Adapt<MessageDto>());
 
         return services;
@@ -70,6 +105,7 @@ public static class ServiceCollectionExtensions
         var implementations = new[]
         {
             typeof(ErrorBehavior),
+            typeof(CallbackQueryBehavior),
             typeof(SlashCommandBehavior),
             typeof(LinguisticCommandBehavior),
             typeof(MentionBehavior),
@@ -78,7 +114,10 @@ public static class ServiceCollectionExtensions
         };
 
         foreach (var implementation in implementations)
+        {
             services.AddScoped(typeof(IBehavior), implementation);
+            services.AddScoped(implementation, implementation);
+        }
 
         var behaviorTypes = GetImplementationsOf<IBehavior>();
         foreach (var behaviorType in behaviorTypes)
@@ -102,6 +141,18 @@ public static class ServiceCollectionExtensions
         return services.AddCommandResources(commandTypes.Select(x => x.FullName!));
     }
 
+    private static IServiceCollection AddCallbackQueryHandlers(this IServiceCollection services)
+    {
+        var handlerTypes = GetImplementationsOf<ICallbackQueryHandler>().ToArray();
+        foreach (var handlerType in handlerTypes)
+        {
+            Log.Information("Registering callback query handler of type {0}", handlerType.FullName);
+            services.AddScoped(typeof(ICallbackQueryHandler), handlerType);
+        }
+
+        return services;
+    }
+
     private static IServiceCollection AddCommandResources(
         this IServiceCollection services, IEnumerable<string> commandTypeNames)
     {
@@ -113,11 +164,13 @@ public static class ServiceCollectionExtensions
 
                 var data = ParseJObjectFromRelativeLocation(path);
                 return data is not null
-                    ? new CommandResources(ParseJObjectFromRelativeLocation(path))
+                    ? new CommandResources(data)
                     : null;
-            });
+            })
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);;
 
-        return services.AddSingleton<IDictionary<string, CommandResources>>(resourceMap!);
+        return services.AddSingleton<IDictionary<string, CommandResources?>>(resourceMap);
     }
 
     private static IServiceCollection AddBehaviorResources(
@@ -133,13 +186,20 @@ public static class ServiceCollectionExtensions
                 return data is not null
                     ? new BehaviorResources(data)
                     : null;
-            });
+            })
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);
 
         return services.AddSingleton<IDictionary<string, BehaviorResources?>>(resourceMap);
     }
 
-    private static IServiceCollection AddCommonResources(this IServiceCollection services) =>
-        services.AddSingleton(new CommonResources(ParseJObjectFromRelativeLocation(CommonResourcesPath)));
+    private static IServiceCollection AddCommonResources(this IServiceCollection services)
+    {
+        var data = ParseJObjectFromRelativeLocation(CommonResourcesPath);
+        return data is not null
+            ? services.AddSingleton(new CommonResources(data))
+            : services;
+    }
 
     private static JObject? ParseJObjectFromRelativeLocation(string relativePath)
     {

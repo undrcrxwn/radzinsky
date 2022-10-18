@@ -34,6 +34,6 @@ public class StatusCommand : ICommand
         response.Append("Чатов: ");
         response.AppendLine(_dbContext.Chats.Count().ToString());
         
-        await context.ReplyAsync(response.ToString());
+        await context.SendTextAsync(response.ToString());
     }
 }
