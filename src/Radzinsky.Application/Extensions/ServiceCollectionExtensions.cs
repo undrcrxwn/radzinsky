@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICalculator, Calculator>()
             .AddSingleton<IHashingService, Md5HashingService>()
             .AddSingleton<IReplyMemoryService, ReplyMemoryService>()
+            .AddScoped<IPersistentAsyncService, PersistentAsyncService>()
             .AddScoped<IAuthorizationService, AuthorizationService>()
             .AddScoped<IStateService, StateService>()
             .AddScoped<BehaviorContext>()
@@ -65,7 +66,7 @@ public static class ServiceCollectionExtensions
                 source => source.CallbackQuery == null
                     ? null
                     : source.CallbackQuery.Adapt<CallbackQueryDto>());
-
+        
         TypeAdapterConfig<Telegram.Bot.Types.CallbackQuery, CallbackQueryDto>.NewConfig()
             .Map(
                 destination => destination.CallbackHandlerTypeNameHash,

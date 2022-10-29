@@ -2,6 +2,7 @@
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Domain.Models.Entities;
 using Radzinsky.Persistence;
+using Serilog;
 
 namespace Radzinsky.Application.Services;
 
@@ -24,6 +25,8 @@ public class StateService : IStateService
     {
         var entry = await FindEntryAsync(key);
         var serializedPayload = JsonConvert.SerializeObject(payload);
+        
+        Log.Information($"Saving state: {0}", serializedPayload);
 
         if (entry is null)
             await _dbContext.States.AddAsync(new State(key, serializedPayload));

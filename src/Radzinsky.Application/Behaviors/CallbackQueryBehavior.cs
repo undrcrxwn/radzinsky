@@ -1,5 +1,8 @@
-﻿using Radzinsky.Application.Abstractions;
+﻿using System.Reflection;
+using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Delegates;
+using Radzinsky.Application.Misc;
+using Radzinsky.Application.Misc.Attributes;
 using Radzinsky.Application.Models.Contexts;
 using Telegram.Bot.Types.Enums;
 
@@ -35,6 +38,20 @@ public class CallbackQueryBehavior : IBehavior
         var callbackQueryHandler = _callbackQueryHandlers.First(x =>
             _hasher.HashKey(x.GetType().FullName!) == _callbackQueryContext.Query.CallbackHandlerTypeNameHash);
         
-        await callbackQueryHandler.HandleCallbackQueryAsync(_callbackQueryContext, new CancellationTokenSource().Token);
+        var shouldRunWithPersistedState =
+            callbackQueryHandler.GetType().GetMethod(nameof(ICommand.ExecuteAsync))!
+                .GetCustomAttribute<PersistedAsyncStateAttribute>() is not null;
+
+        if (shouldRunWithPersistedState)
+        {
+            var synchronizationContext = new PersistentSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(synchronizationContext);
+        }
+
+        try
+        {
+            await callbackQueryHandler.HandleCallbackQueryAsync(_callbackQueryContext, new CancellationTokenSource().Token);
+        }
+        catch (AsyncOperationInterruptedException) {}
     }
 }

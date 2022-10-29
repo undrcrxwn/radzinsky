@@ -100,6 +100,9 @@
       <None Update="Resources\Commands\UserRoleCommand.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="Resources\Commands\VoteKickCommand.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
