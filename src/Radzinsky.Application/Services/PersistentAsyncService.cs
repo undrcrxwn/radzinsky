@@ -97,8 +97,14 @@ public class PersistentAsyncService : IPersistentAsyncService
         var stateField = stateMachineFields.Find(x => x.Name == StateMachineStateFieldName)!;
         var state = (int)stateField.GetValue(stateMachine)!;
         stateField.SetValue(stateMachine, state + 1);
+        
+        var xField = stateMachineFields.Find(x => x.Name == "<x>5__2")!;
+        xField.SetValue(stateMachine, 1337);
     });
-
+    
+    
+    
+    
     private static string GetStateKey(string stateMachineTypeName, string? identifier) =>
         $"{stateMachineTypeName} {identifier ?? string.Empty}";
 
@@ -134,11 +140,226 @@ public class StateMachineProvider
 
         public void GetResult()
         {
-            var target = _continuation!.Target!;
+            var c = _continuation ?? new Action(() => {
+            });
+            
+            var machine = Executioner.GetStateMachine(c);
+            _handler(machine).Wait();
+            /*var target = _continuation!.Target!;
             var field = target.GetType()
                 .GetField(StateMachineFieldName, BindingFlags.Instance | BindingFlags.Public)!;
             var stateMachine = (IAsyncStateMachine)field.GetValue(target)!;
-            _handler(stateMachine).Wait();
+            await _handler(stateMachine);*/
         }
+    }
+}
+
+
+
+
+
+
+interface ITransient
+{
+}
+
+public class Executioner : ITransient
+    {
+        private readonly Action<Executioner> entryPoint;
+        private Action nextAction;
+
+        public Executioner(Action<Executioner> entryPoint)
+        {
+            this.entryPoint = entryPoint;
+        }
+
+        public void Start()
+        {
+            Execute(entryPoint);
+        }
+
+        public static IAsyncStateMachine GetStateMachine(Action continuation)
+        {
+            var target = continuation.Target;
+            var field = target.GetType().GetField("StateMachine", BindingFlags.Public | BindingFlags.Instance);
+            return (IAsyncStateMachine) field.GetValue(target);
+        }
+        
+        protected void Execute(Action<Executioner> action)
+        {       
+            nextAction = () => action(this);
+            while (nextAction != null)
+            {
+                Action next = nextAction;
+                nextAction = null;
+                next();
+            }
+        }
+
+        public IAwaitable CreateAwaitable(Action<IAsyncStateMachine> stateMachineHandler)
+        {
+            var awaiter = new YieldingAwaiter(continuation =>
+            {
+                var machine = GetStateMachine(continuation);
+                stateMachineHandler(machine);
+                nextAction = continuation;
+            });
+            return awaiter.NewAwaitable();
+        }
+
+        public IAwaitable CreateAwaitable(Func<IAsyncStateMachine, Action> stateMachineHandler)
+        {
+            var awaiter = new YieldingAwaiter(continuation =>
+            {
+                var machine = GetStateMachine(continuation);
+                nextAction = stateMachineHandler(machine);
+            });
+            return awaiter.NewAwaitable();
+        }
+
+        public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Action<IAsyncStateMachine> stateMachineHandler, T result)
+        {
+            var awaiter = new YieldingAwaiter<T>(continuation =>
+            {
+                var machine = GetStateMachine(continuation);
+                stateMachineHandler(machine);
+                nextAction = continuation;
+            }, result);
+            return new YieldingAwaitable<T>(awaiter);
+        }
+
+        public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Func<IAsyncStateMachine, Action> stateMachineHandler, T value)
+        {
+            var awaiter = new YieldingAwaiter<T>(continuation =>
+            {
+                var machine = GetStateMachine(continuation);
+                nextAction = stateMachineHandler(machine);
+            }, value);
+            return new YieldingAwaitable<T>(awaiter);
+        }
+    }
+
+public struct YieldingAwaiter : IAwaiter
+{
+    private readonly Action<Action> onCompletedHandler;
+
+    public YieldingAwaiter(Action<Action> onCompletedHandler)
+    {
+        this.onCompletedHandler = onCompletedHandler;
+    }
+
+    public bool IsCompleted { get { return false; } }
+
+    public void GetResult()
+    {            
+    }
+
+    public void OnCompleted(Action continuation)
+    {
+        onCompletedHandler(continuation);
+    }
+}
+
+public class YieldingAwaitable<T>
+{
+    private readonly YieldingAwaiter<T> awaiter;
+
+    internal YieldingAwaitable(YieldingAwaiter<T> awaiter)
+    {
+        this.awaiter = awaiter;
+    }
+
+    public YieldingAwaiter<T> GetAwaiter()
+    {
+        return awaiter;
+    }
+}
+
+public struct YieldingAwaiter<T> : IAwaiter<T>
+{
+    private readonly Action<Action> onCompletedHandler;
+    private readonly T result;
+
+    public YieldingAwaiter(Action<Action> onCompletedHandler, T result)
+    {
+        this.onCompletedHandler = onCompletedHandler;
+        this.result = result;
+    }
+
+    public bool IsCompleted { get { return false; } }
+
+    public T GetResult()
+    {
+        return result;
+    }
+
+    public void OnCompleted(Action continuation)
+    {
+        onCompletedHandler(continuation);
+    }
+}
+    
+public interface IAwaitable
+{
+    IAwaiter GetAwaiter();
+}
+
+public interface IAwaitable<T>
+{
+    IAwaiter<T> GetAwaiter();
+}
+    
+public interface IAwaiter : INotifyCompletion
+{
+    bool IsCompleted { get; }
+    void GetResult();
+}
+
+public interface IAwaiter<out T> : INotifyCompletion
+{
+    bool IsCompleted { get; }
+    T GetResult();
+}
+
+public static class AwaiterExtensions
+{
+    private class Awaitable : IAwaitable
+    {
+        private readonly IAwaiter awaiter;
+
+        internal Awaitable(IAwaiter awaiter)
+        {
+            this.awaiter = awaiter;
+        }
+
+        public IAwaiter GetAwaiter()
+        {
+            return awaiter;
+        }
+    }
+
+    public static IAwaitable NewAwaitable(this IAwaiter awaiter)
+    {
+        return new Awaitable(awaiter);
+    }
+
+    private class Awaitable<T> : IAwaitable<T>
+    {
+        private readonly IAwaiter<T> awaiter;
+
+        internal Awaitable(IAwaiter<T> awaiter)
+        {
+            this.awaiter = awaiter;
+        }
+
+        public IAwaiter<T> GetAwaiter()
+        {
+            return awaiter;
+        }
+    }
+
+    public static IAwaitable<T> NewAwaitable<T>(this IAwaiter<T> awaiter)
+    {
+        return new Awaitable<T>(awaiter);
     }
 }

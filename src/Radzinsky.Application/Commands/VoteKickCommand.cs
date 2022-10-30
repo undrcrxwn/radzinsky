@@ -21,8 +21,11 @@ public class VoteKickCommand : ICommand, ICallbackQueryHandler
         _async = async;
     }
     
+    
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
+        await Task.Yield();
+        
         await new StateMachineProvider(async machine =>
         {
             var state = (int)machine.GetType()
@@ -31,44 +34,9 @@ public class VoteKickCommand : ICommand, ICallbackQueryHandler
             
             await context.SendTextAsync($"Current state: {state}");
         });
-        
+
         await _async.RetrieveState(context.Update.ChatId.ToString()!);
-        
-        await Task.Yield();
-        
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
 
-        await Task.Yield();
-        
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
-
-        await Task.Yield();
-        
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
-
-        await Task.Yield();
-        
         await new StateMachineProvider(async machine =>
         {
             var state = (int)machine.GetType()
@@ -82,7 +50,23 @@ public class VoteKickCommand : ICommand, ICallbackQueryHandler
         await context.SendTextAsync($"Initially, the x is {x}.");
 
         await context.SendTextAsync("We're interrupting now...");
+        await new StateMachineProvider(async machine =>
+        {
+            var state = (int)machine.GetType()
+                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                .GetValue(machine)!;
+            
+            await context.SendTextAsync($"Current state: {state}");
+        });
         await _async.AwaitCallback(context.Update.ChatId.ToString()!);
+        await new StateMachineProvider(async machine =>
+        {
+            var state = (int)machine.GetType()
+                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                .GetValue(machine)!;
+            
+            await context.SendTextAsync($"Current state: {state}");
+        });
         
         await context.SendTextAsync($"As for now, the x is {x}.");
         await context.SendTextAsync("Bye!");

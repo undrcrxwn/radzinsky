@@ -8,6 +8,32 @@ namespace Radzinsky.Application.Misc;
 public sealed class PersistentSynchronizationContext : SynchronizationContext
 {
     private const string StateMachinePropertyName = "StateMachine";
+    private bool _isStateRetrieved;
+    
+    public string? StateKey;
+
+    public override void Post(SendOrPostCallback callback, object? state)
+    {
+        if (!_isStateRetrieved)
+        {
+            var machine = state!.GetType()
+                .GetField(StateMachinePropertyName)!
+                .GetValue(state)!;
+
+            var field = machine.GetType()
+                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.Public)!;
+            field.SetValue(machine, 2);
+
+            Console.WriteLine($"Retrieving state by key '{StateKey}'");
+
+            _isStateRetrieved = true;
+        }
+
+        base.Post(callback, state);
+    }
+    
+    #if false
+    private const string StateMachinePropertyName = "StateMachine";
     private const string StateMachineStateFieldName = "<>1__state";
     private const string StateMachineBuilderFieldName = "<>t__builder";
     public object? TargetState { get; private set; }
@@ -90,4 +116,5 @@ public sealed class PersistentSynchronizationContext : SynchronizationContext
 
         stateMachineFields.ForEach(x => x.SetValue(stateMachine, data[x.Name]!.ToObject(x.FieldType)));*/
     }
+#endif
 }
