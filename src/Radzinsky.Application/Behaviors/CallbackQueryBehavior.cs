@@ -13,15 +13,18 @@ public class CallbackQueryBehavior : IBehavior
     private readonly IEnumerable<ICallbackQueryHandler> _callbackQueryHandlers;
     private readonly CallbackQueryContext _callbackQueryContext;
     private readonly IHashingService _hasher;
+    private readonly IStateService _states;
 
     public CallbackQueryBehavior(
         IEnumerable<ICallbackQueryHandler> callbackQueryHandlers,
         CallbackQueryContext callbackQueryContext,
-        IHashingService hasher)
+        IHashingService hasher,
+        IStateService states)
     {
         _callbackQueryHandlers = callbackQueryHandlers;
         _callbackQueryContext = callbackQueryContext;
         _hasher = hasher;
+        _states = states;
     }
 
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
@@ -44,7 +47,7 @@ public class CallbackQueryBehavior : IBehavior
 
         if (shouldRunWithPersistedState)
         {
-            var synchronizationContext = new PersistentSynchronizationContext();
+            var synchronizationContext = new PersistentSynchronizationContext(_states);
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
         }
 

@@ -12,56 +12,27 @@ namespace Radzinsky.Application.Commands;
 
 public class VoteKickCommand : ICommand, ICallbackQueryHandler
 {
-    private readonly IHashingService _hasher;
     private readonly IPersistentAsyncService _async;
 
-    public VoteKickCommand(IHashingService hasher, IPersistentAsyncService async)
+    public VoteKickCommand(IPersistentAsyncService async)
     {
-        _hasher = hasher;
         _async = async;
     }
     
     [PersistedAsyncState]
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        await context.SendTextAsync(SynchronizationContext.Current?.GetType().Name ?? "NULL");
-        await _async.RetrieveState(context.Update.ChatId.ToString()!);
+        await _async.RetrieveCurrentState(context.Update.ChatId.ToString()!);
 
-        var x = 42;
-        await context.SendTextAsync($"Initially, the x is {x}.");
-
-        await context.SendTextAsync("We're interrupting now...");
+        await context.SendTextAsync("1");
         await _async.AwaitCallback();
-        
-        await context.SendTextAsync($"As for now, the x is still {x}.");
-        await context.SendTextAsync("Bye!");
-        
-        return;
-        
-        //await context.SendTextAsync("ASM before Task.Yield: " + SynchronizationContext.Current?.GetType().Name);
-        await Task.Yield();
-        await context.SendTextAsync("ASM after Task.Yield: " + SynchronizationContext.Current?.GetType().Name);
-
-        var factory = new ButtonFactory<VoteKickCommand>(_hasher, $"{context.Update.InteractorUserId} {{0}}");
-
-        var keyboard = new[]
-        {
-            new[]
-            {
-                factory.CreateCallbackDataButton("Yes", "yes"),
-                factory.CreateCallbackDataButton("No", "no")
-            }
-        };
-
-        await context.SendTextAsync("Should we kick the guy? You decide.",
-            replyMarkup: new InlineKeyboardMarkup(keyboard));
-
-        await context.SendTextAsync("* I/O interruption *");
-
-        await context.SendTextAsync("ASM before _async.AwaitCallback: " + SynchronizationContext.Current?.GetType().Name);
-        //await _async.AwaitCallback(context.Update.ChatId.ToString()!);
-
-        await context.SendTextAsync("* handling I/O result *");
+        await context.SendTextAsync("2");
+        await _async.AwaitCallback();
+        await context.SendTextAsync("3");
+        await _async.AwaitCallback();
+        await context.SendTextAsync("4");
+        await _async.AwaitCallback();
+        await context.SendTextAsync("5");
     }
 
     public async Task HandleCallbackQueryAsync(CallbackQueryContext context, CancellationToken token)

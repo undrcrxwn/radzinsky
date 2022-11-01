@@ -13,13 +13,12 @@ namespace Radzinsky.Application.Services;
 public class PersistentAsyncService : IPersistentAsyncService
 {
     private record FieldData(string TypeName, string SerializedValue);
-    
+
     private const string StateMachineStateFieldName = "<>1__state";
     private const string StateMachineBuilderFieldName = "<>t__builder";
 
     private static readonly IEnumerable<string> IgnoredStateMachineFieldNames = new[]
     {
-        StateMachineStateFieldName,
         StateMachineBuilderFieldName
     };
 
@@ -28,46 +27,28 @@ public class PersistentAsyncService : IPersistentAsyncService
     public PersistentAsyncService(IStateService states) =>
         _states = states;
 
-    public YieldAwaitable RetrieveState(string? identifier = null)
+    public YieldAwaitable SaveCurrentState(string? identifier = null)
     {
         var context = (PersistentSynchronizationContext)SynchronizationContext.Current!;
-        context.Identifier = identifier;
-
-        if (!context.IsStateRetrieved && context.Machine is not null)
+        
+        context.ScheduleForNextAwait(machine =>
         {
-            Task.Run(() => RetrieveState(context.Machine, identifier)).Wait();
-            context.IsStateRetrieved = true;
-        }
-
+            Log.Information("Job `SaveCurrentState` starting");
+            
+            if (machine is null)
+                return;
+            
+            Log.Information("Job `SaveCurrentState` in progress");
+            
+            SaveState(machine, identifier).Wait();
+        });
+        
         return Task.Yield();
     }
     
-    private async Task RetrieveState(IAsyncStateMachine machine, string? identifier = null)
+    public async Task SaveState(IAsyncStateMachine machine, string? identifier = null)
     {
         var machineType = machine.GetType();
-        var stateKey = GetStateKey(machineType.FullName!, identifier);
-        var valueMap = await _states.ReadStateAsync<IDictionary<string, FieldData>>(stateKey);
-        
-        if (valueMap is null)
-            return;
-        
-        var stateMachineFields = machineType.GetFields(BindingFlags.Instance | BindingFlags.Public)
-            .ExceptBy(IgnoredStateMachineFieldNames, x => x.Name)
-            .ToList();
-
-        stateMachineFields.ForEach(x =>
-        {
-            var serializedValue = valueMap[x.Name].SerializedValue;
-            var deserializedValue = JsonConvert.DeserializeObject(serializedValue, x.FieldType);
-            x.SetValue(machine, deserializedValue);
-        });
-    }
-    
-    public async Task AwaitCallback()
-    {
-        var context = (PersistentSynchronizationContext)SynchronizationContext.Current!;
-        
-        var machineType = context.Machine!.GetType();
         var machineFields = machineType
             .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Where(x => !x.Name.StartsWith('<') || x.Name == StateMachineStateFieldName)
@@ -77,7 +58,7 @@ public class PersistentAsyncService : IPersistentAsyncService
 
                 try
                 {
-                    serializedValue = JsonConvert.SerializeObject(x.GetValue(context.Machine));
+                    serializedValue = JsonConvert.SerializeObject(x.GetValue(machine));
                 }
                 catch
                 {
@@ -89,8 +70,66 @@ public class PersistentAsyncService : IPersistentAsyncService
                     serializedValue);
             });
 
-        var stateKey = GetStateKey(machineType.FullName!, context.Identifier);
+        var stateKey = GetStateKey(machineType.FullName!, identifier);
         await _states.WriteStateAsync(stateKey, machineFields);
+        
+        Log.Warning("Async state saved by key {0}", stateKey);
+    }
+
+    public YieldAwaitable RetrieveCurrentState(string? identifier = null)
+    {
+        var context = (PersistentSynchronizationContext)SynchronizationContext.Current!;
+        
+        context.ScheduleForNextAwait(machine =>
+        {
+            Log.Information("Job `RetrieveCurrentState` starting");
+            
+            if (context.IsStateRetrieved || machine is null)
+                return;
+            
+            Log.Information("Job `RetrieveCurrentState` in progress");
+                
+            RetrieveState(machine, identifier).Wait();
+            context.IsStateRetrieved = true;
+        });
+        
+        return Task.Yield();
+    }
+    
+    public async Task RetrieveState(IAsyncStateMachine machine, string? identifier = null)
+    {
+        var machineType = machine.GetType();
+        var stateKey = GetStateKey(machineType.FullName!, identifier);
+        var valueMap = await _states.ReadStateAsync<IDictionary<string, FieldData>>(stateKey);
+
+        if (valueMap is null)
+            return;
+
+        var stateMachineFields = machineType.GetFields(BindingFlags.Instance | BindingFlags.Public)
+            .ExceptBy(IgnoredStateMachineFieldNames, x => x.Name)
+            .ToList();
+
+        stateMachineFields.ForEach(x =>
+        {
+            var serializedValue = valueMap[x.Name].SerializedValue;
+            var deserializedValue = JsonConvert.DeserializeObject(serializedValue, x.FieldType);
+
+            var value =
+                x.Name == StateMachineStateFieldName
+                    ? (int)deserializedValue! + 1
+                    : deserializedValue;
+
+            x.SetValue(machine, value);
+        });
+        
+        Log.Warning("Async state retrieved by key {0}", stateKey);
+    }
+
+    public async Task AwaitCallback()
+    {
+        await SaveCurrentState();
+        Log.Warning("Interrupting...");
+        throw new AsyncOperationInterruptedException();
     }
     
     private static string GetStateKey(string machineTypeName, string? identifier) =>

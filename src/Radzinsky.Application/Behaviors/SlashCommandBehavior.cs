@@ -17,8 +17,9 @@ public class SlashCommandBehavior : CommandBehaviorBase
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
-        CommandContext commandContext)
-        : base(commands, resources, scopeFactory, commandContext)
+        CommandContext commandContext,
+        IStateService states)
+        : base(commands, resources, scopeFactory, commandContext, states)
     {
         _bot = bot;
         _commands = commands;

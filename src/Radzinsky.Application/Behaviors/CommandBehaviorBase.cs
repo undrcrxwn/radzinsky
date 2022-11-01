@@ -16,17 +16,20 @@ public abstract class CommandBehaviorBase : IBehavior
     private readonly IResourcesService _resources;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly CommandContext _commandContext;
+    private readonly IStateService _states;
 
     public CommandBehaviorBase(
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
-        CommandContext commandContext)
+        CommandContext commandContext,
+        IStateService states)
     {
         _commands = commands;
         _resources = resources;
         _scopeFactory = scopeFactory;
         _commandContext = commandContext;
+        _states = states;
     }
 
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)
@@ -75,7 +78,7 @@ public abstract class CommandBehaviorBase : IBehavior
 
         if (shouldRunWithPersistedState)
         {
-            var synchronizationContext = new PersistentSynchronizationContext();
+            var synchronizationContext = new PersistentSynchronizationContext(_states);
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
         }
 

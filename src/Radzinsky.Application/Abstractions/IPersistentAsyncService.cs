@@ -7,6 +7,11 @@ namespace Radzinsky.Application.Abstractions;
 
 public interface IPersistentAsyncService
 {
+    public YieldAwaitable SaveCurrentState(string? identifier = null);
+    public Task SaveState(IAsyncStateMachine machine, string? identifier = null);
+    
+    public YieldAwaitable RetrieveCurrentState(string? identifier = null);
+    public Task RetrieveState(IAsyncStateMachine machine, string? identifier = null);
+    
     public Task AwaitCallback();
-    public YieldAwaitable RetrieveState(string identifier);
 }
