@@ -21,54 +21,19 @@ public class VoteKickCommand : ICommand, ICallbackQueryHandler
         _async = async;
     }
     
-    
+    [PersistedAsyncState]
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        await Task.Yield();
-        
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
-
+        await context.SendTextAsync(SynchronizationContext.Current?.GetType().Name ?? "NULL");
         await _async.RetrieveState(context.Update.ChatId.ToString()!);
-
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
 
         var x = 42;
         await context.SendTextAsync($"Initially, the x is {x}.");
 
         await context.SendTextAsync("We're interrupting now...");
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
-        await _async.AwaitCallback(context.Update.ChatId.ToString()!);
-        await new StateMachineProvider(async machine =>
-        {
-            var state = (int)machine.GetType()
-                .GetField("<>1__state", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
-                .GetValue(machine)!;
-            
-            await context.SendTextAsync($"Current state: {state}");
-        });
+        await _async.AwaitCallback();
         
-        await context.SendTextAsync($"As for now, the x is {x}.");
+        await context.SendTextAsync($"As for now, the x is still {x}.");
         await context.SendTextAsync("Bye!");
         
         return;
@@ -94,7 +59,7 @@ public class VoteKickCommand : ICommand, ICallbackQueryHandler
         await context.SendTextAsync("* I/O interruption *");
 
         await context.SendTextAsync("ASM before _async.AwaitCallback: " + SynchronizationContext.Current?.GetType().Name);
-        await _async.AwaitCallback(context.Update.ChatId.ToString()!);
+        //await _async.AwaitCallback(context.Update.ChatId.ToString()!);
 
         await context.SendTextAsync("* handling I/O result *");
     }

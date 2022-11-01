@@ -16,20 +16,17 @@ public abstract class CommandBehaviorBase : IBehavior
     private readonly IResourcesService _resources;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly CommandContext _commandContext;
-    private readonly ICheckpointMemoryService _checkpoints;
 
     public CommandBehaviorBase(
         ICommandsService commands,
         IResourcesService resources,
         IServiceScopeFactory scopeFactory,
-        CommandContext commandContext,
-        ICheckpointMemoryService checkpoints)
+        CommandContext commandContext)
     {
         _commands = commands;
         _resources = resources;
         _scopeFactory = scopeFactory;
         _commandContext = commandContext;
-        _checkpoints = checkpoints;
     }
 
     public async Task HandleAsync(BehaviorContext context, BehaviorContextHandler next)

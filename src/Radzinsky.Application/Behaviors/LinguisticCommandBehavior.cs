@@ -19,7 +19,7 @@ public class LinguisticCommandBehavior : CommandBehaviorBase
         IServiceScopeFactory scopeFactory,
         ICheckpointMemoryService checkpoints,
         CommandContext commandContext)
-        : base(commands, resources, scopeFactory, commandContext, checkpoints)
+        : base(commands, resources, scopeFactory, commandContext)
     {
         _parser = parser;
         _commands = commands;

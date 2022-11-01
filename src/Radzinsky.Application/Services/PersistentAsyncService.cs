@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Radzinsky.Application.Abstractions;
 using Radzinsky.Application.Misc;
 using Radzinsky.Application.Models.Contexts;
@@ -11,6 +12,8 @@ namespace Radzinsky.Application.Services;
 
 public class PersistentAsyncService : IPersistentAsyncService
 {
+    private record FieldData(string TypeName, string SerializedValue);
+    
     private const string StateMachineStateFieldName = "<>1__state";
     private const string StateMachineBuilderFieldName = "<>t__builder";
 
@@ -25,12 +28,47 @@ public class PersistentAsyncService : IPersistentAsyncService
     public PersistentAsyncService(IStateService states) =>
         _states = states;
 
-    public StateMachineProvider AwaitCallback(string identifier) => new(stateMachine =>
+    public YieldAwaitable RetrieveState(string? identifier = null)
     {
-        Log.Warning($"AwaitCallback {identifier}");
+        var context = (PersistentSynchronizationContext)SynchronizationContext.Current!;
+        context.Identifier = identifier;
 
-        var stateMachineType = stateMachine.GetType();
-        var stateMachineFields = stateMachineType
+        if (!context.IsStateRetrieved && context.Machine is not null)
+        {
+            Task.Run(() => RetrieveState(context.Machine, identifier)).Wait();
+            context.IsStateRetrieved = true;
+        }
+
+        return Task.Yield();
+    }
+    
+    private async Task RetrieveState(IAsyncStateMachine machine, string? identifier = null)
+    {
+        var machineType = machine.GetType();
+        var stateKey = GetStateKey(machineType.FullName!, identifier);
+        var valueMap = await _states.ReadStateAsync<IDictionary<string, FieldData>>(stateKey);
+        
+        if (valueMap is null)
+            return;
+        
+        var stateMachineFields = machineType.GetFields(BindingFlags.Instance | BindingFlags.Public)
+            .ExceptBy(IgnoredStateMachineFieldNames, x => x.Name)
+            .ToList();
+
+        stateMachineFields.ForEach(x =>
+        {
+            var serializedValue = valueMap[x.Name].SerializedValue;
+            var deserializedValue = JsonConvert.DeserializeObject(serializedValue, x.FieldType);
+            x.SetValue(machine, deserializedValue);
+        });
+    }
+    
+    public async Task AwaitCallback()
+    {
+        var context = (PersistentSynchronizationContext)SynchronizationContext.Current!;
+        
+        var machineType = context.Machine!.GetType();
+        var machineFields = machineType
             .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Where(x => !x.Name.StartsWith('<') || x.Name == StateMachineStateFieldName)
             .ToDictionary(x => x.Name, x =>
@@ -39,11 +77,11 @@ public class PersistentAsyncService : IPersistentAsyncService
 
                 try
                 {
-                    serializedValue = JsonConvert.SerializeObject(x.GetValue(stateMachine));
+                    serializedValue = JsonConvert.SerializeObject(x.GetValue(context.Machine));
                 }
                 catch
                 {
-                    serializedValue = null;
+                    serializedValue = JsonConvert.SerializeObject(null);
                 }
 
                 return new FieldData(
@@ -51,66 +89,18 @@ public class PersistentAsyncService : IPersistentAsyncService
                     serializedValue);
             });
 
-        var stateKey = GetStateKey(stateMachineType.FullName!, identifier);
-        _states.WriteStateAsync(stateKey, stateMachineFields).Wait();
-        Log.Information("Async state machine state has been saved");
-
-        throw new AsyncOperationInterruptedException();
-    });
-
-    public StateMachineProvider RetrieveState(string identifier) => new(async stateMachine =>
-    {
-        Log.Warning($"RetrieveState {identifier}");
-
-        var stateMachineType = stateMachine.GetType();
-        var stateKey = GetStateKey(stateMachineType.FullName!, identifier);
-        var fieldMap = await _states.ReadStateAsync<IDictionary<string, FieldData>>(stateKey);
-
-        if (fieldMap is null)
-            return;
-
-        var stateMachineFields = stateMachineType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(x => !x.Name.StartsWith('<') || x.Name == StateMachineStateFieldName)
-            .ToList();
-
-        stateMachineFields.ForEach(x =>
-        {
-            var fieldData = fieldMap[x.Name];
-
-            Log.Warning("Retreiving field {0} of type {1} with value {2}",
-                x.Name, fieldData.TypeName, fieldData.SerializedValue);
-            try
-            {
-                x.SetValue(
-                    stateMachine,
-                    JsonConvert.DeserializeObject(
-                        fieldData.SerializedValue,
-                        Type.GetType(fieldData.TypeName)!));
-            }
-            catch
-            {
-                Log.Warning("Failed to retreive field {0} of type {1}",
-                    x.Name, fieldData.TypeName);
-            }
-        });
-
-        var stateField = stateMachineFields.Find(x => x.Name == StateMachineStateFieldName)!;
-        var state = (int)stateField.GetValue(stateMachine)!;
-        stateField.SetValue(stateMachine, state + 1);
-        
-        var xField = stateMachineFields.Find(x => x.Name == "<x>5__2")!;
-        xField.SetValue(stateMachine, 1337);
-    });
+        var stateKey = GetStateKey(machineType.FullName!, context.Identifier);
+        await _states.WriteStateAsync(stateKey, machineFields);
+    }
     
-    
-    
-    
-    private static string GetStateKey(string stateMachineTypeName, string? identifier) =>
-        $"{stateMachineTypeName} {identifier ?? string.Empty}";
-
-    private record FieldData(string TypeName, string SerializedValue);
+    private static string GetStateKey(string machineTypeName, string? identifier) =>
+        identifier is not null
+            ? $"{machineTypeName}__{identifier}"
+            : machineTypeName;
 }
 
+
+#if false
 public class StateMachineProvider
 {
     private readonly Awaiter _awaiter;
@@ -140,9 +130,8 @@ public class StateMachineProvider
 
         public void GetResult()
         {
-            var c = _continuation ?? new Action(() => {
-            });
-            
+            var c = _continuation ?? new Action(() => { });
+
             var machine = Executioner.GetStateMachine(c);
             _handler(machine).Wait();
             /*var target = _continuation!.Target!;
@@ -154,90 +143,85 @@ public class StateMachineProvider
     }
 }
 
-
-
-
-
-
 interface ITransient
 {
 }
 
 public class Executioner : ITransient
+{
+    private readonly Action<Executioner> entryPoint;
+    private Action nextAction;
+
+    public Executioner(Action<Executioner> entryPoint)
     {
-        private readonly Action<Executioner> entryPoint;
-        private Action nextAction;
+        this.entryPoint = entryPoint;
+    }
 
-        public Executioner(Action<Executioner> entryPoint)
-        {
-            this.entryPoint = entryPoint;
-        }
+    public void Start()
+    {
+        Execute(entryPoint);
+    }
 
-        public void Start()
-        {
-            Execute(entryPoint);
-        }
+    public static IAsyncStateMachine GetStateMachine(Action continuation)
+    {
+        var target = continuation.Target;
+        var field = target.GetType().GetField("StateMachine", BindingFlags.Public | BindingFlags.Instance);
+        return (IAsyncStateMachine)field.GetValue(target);
+    }
 
-        public static IAsyncStateMachine GetStateMachine(Action continuation)
+    protected void Execute(Action<Executioner> action)
+    {
+        nextAction = () => action(this);
+        while (nextAction != null)
         {
-            var target = continuation.Target;
-            var field = target.GetType().GetField("StateMachine", BindingFlags.Public | BindingFlags.Instance);
-            return (IAsyncStateMachine) field.GetValue(target);
-        }
-        
-        protected void Execute(Action<Executioner> action)
-        {       
-            nextAction = () => action(this);
-            while (nextAction != null)
-            {
-                Action next = nextAction;
-                nextAction = null;
-                next();
-            }
-        }
-
-        public IAwaitable CreateAwaitable(Action<IAsyncStateMachine> stateMachineHandler)
-        {
-            var awaiter = new YieldingAwaiter(continuation =>
-            {
-                var machine = GetStateMachine(continuation);
-                stateMachineHandler(machine);
-                nextAction = continuation;
-            });
-            return awaiter.NewAwaitable();
-        }
-
-        public IAwaitable CreateAwaitable(Func<IAsyncStateMachine, Action> stateMachineHandler)
-        {
-            var awaiter = new YieldingAwaiter(continuation =>
-            {
-                var machine = GetStateMachine(continuation);
-                nextAction = stateMachineHandler(machine);
-            });
-            return awaiter.NewAwaitable();
-        }
-
-        public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Action<IAsyncStateMachine> stateMachineHandler, T result)
-        {
-            var awaiter = new YieldingAwaiter<T>(continuation =>
-            {
-                var machine = GetStateMachine(continuation);
-                stateMachineHandler(machine);
-                nextAction = continuation;
-            }, result);
-            return new YieldingAwaitable<T>(awaiter);
-        }
-
-        public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Func<IAsyncStateMachine, Action> stateMachineHandler, T value)
-        {
-            var awaiter = new YieldingAwaiter<T>(continuation =>
-            {
-                var machine = GetStateMachine(continuation);
-                nextAction = stateMachineHandler(machine);
-            }, value);
-            return new YieldingAwaitable<T>(awaiter);
+            Action next = nextAction;
+            nextAction = null;
+            next();
         }
     }
+
+    public IAwaitable CreateAwaitable(Action<IAsyncStateMachine> stateMachineHandler)
+    {
+        var awaiter = new YieldingAwaiter(continuation =>
+        {
+            var machine = GetStateMachine(continuation);
+            stateMachineHandler(machine);
+            nextAction = continuation;
+        });
+        return awaiter.NewAwaitable();
+    }
+
+    public IAwaitable CreateAwaitable(Func<IAsyncStateMachine, Action> stateMachineHandler)
+    {
+        var awaiter = new YieldingAwaiter(continuation =>
+        {
+            var machine = GetStateMachine(continuation);
+            nextAction = stateMachineHandler(machine);
+        });
+        return awaiter.NewAwaitable();
+    }
+
+    public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Action<IAsyncStateMachine> stateMachineHandler, T result)
+    {
+        var awaiter = new YieldingAwaiter<T>(continuation =>
+        {
+            var machine = GetStateMachine(continuation);
+            stateMachineHandler(machine);
+            nextAction = continuation;
+        }, result);
+        return new YieldingAwaitable<T>(awaiter);
+    }
+
+    public YieldingAwaitable<T> CreateYieldingAwaitable<T>(Func<IAsyncStateMachine, Action> stateMachineHandler, T value)
+    {
+        var awaiter = new YieldingAwaiter<T>(continuation =>
+        {
+            var machine = GetStateMachine(continuation);
+            nextAction = stateMachineHandler(machine);
+        }, value);
+        return new YieldingAwaitable<T>(awaiter);
+    }
+}
 
 public struct YieldingAwaiter : IAwaiter
 {
@@ -248,10 +232,13 @@ public struct YieldingAwaiter : IAwaiter
         this.onCompletedHandler = onCompletedHandler;
     }
 
-    public bool IsCompleted { get { return false; } }
+    public bool IsCompleted
+    {
+        get { return false; }
+    }
 
     public void GetResult()
-    {            
+    {
     }
 
     public void OnCompleted(Action continuation)
@@ -286,7 +273,10 @@ public struct YieldingAwaiter<T> : IAwaiter<T>
         this.result = result;
     }
 
-    public bool IsCompleted { get { return false; } }
+    public bool IsCompleted
+    {
+        get { return false; }
+    }
 
     public T GetResult()
     {
@@ -298,7 +288,7 @@ public struct YieldingAwaiter<T> : IAwaiter<T>
         onCompletedHandler(continuation);
     }
 }
-    
+
 public interface IAwaitable
 {
     IAwaiter GetAwaiter();
@@ -308,7 +298,7 @@ public interface IAwaitable<T>
 {
     IAwaiter<T> GetAwaiter();
 }
-    
+
 public interface IAwaiter : INotifyCompletion
 {
     bool IsCompleted { get; }
@@ -363,3 +353,5 @@ public static class AwaiterExtensions
         return new Awaitable<T>(awaiter);
     }
 }
+
+#endif
