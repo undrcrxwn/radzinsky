@@ -17,14 +17,14 @@ public class NewsCommand : ICommand
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {
-        var response = await _cache.GetOrCreateAsync("TodayNews", async x =>
+        var response = await _cache.GetOrCreateAsync("TodayNews", async entry =>
         {
-            x.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             return await GetWebScrappedResponseAsync();
         });
 
         await context.DeletePreviousReplyAsync();
-        await context.SendTextAsync(response);
+        await context.SendTextAsync(response!);
     }
     
     private async Task<string> GetWebScrappedResponseAsync()
