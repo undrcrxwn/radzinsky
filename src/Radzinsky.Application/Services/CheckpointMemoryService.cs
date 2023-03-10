@@ -32,7 +32,7 @@ public class CheckpointMemoryService : ICheckpointMemoryService
     }
     
     public Checkpoint? GetCheckpoint(long userId) =>
-        _cache.TryGetValue(GetCheckpointEntryName(userId), out Checkpoint checkpoint)
+        _cache.TryGetValue(GetCheckpointEntryName(userId), out Checkpoint? checkpoint)
             ? checkpoint
             : null;
     

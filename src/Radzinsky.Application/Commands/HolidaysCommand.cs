@@ -24,7 +24,7 @@ public class HolidaysCommand : ICommand
         });
 
         await context.DeletePreviousReplyAsync();
-        await context.SendTextAsync(response);
+        await context.SendTextAsync(response!);
     }
 
     private async Task<string> GetWebScrappedResponseAsync()

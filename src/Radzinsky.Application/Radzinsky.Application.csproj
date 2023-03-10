@@ -7,17 +7,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CsvHelper" Version="28.0.1" />
-      <PackageReference Include="Google.Apis.CustomSearchAPI.v1" Version="1.57.0.2455" />
-      <PackageReference Include="Hangfire" Version="1.7.31" />
-      <PackageReference Include="Hangfire.PostgreSql" Version="1.9.9" />
-      <PackageReference Include="HtmlAgilityPack" Version="1.11.45" />
+      <PackageReference Include="CsvHelper" Version="30.0.1" />
+      <PackageReference Include="Google.Apis.CustomSearchAPI.v1" Version="1.60.0.2455" />
+      <PackageReference Include="Hangfire" Version="1.7.33" />
+      <PackageReference Include="Hangfire.PostgreSql" Version="1.19.12" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
       <PackageReference Include="Mapster" Version="7.3.0" />
-      <PackageReference Include="MathParser.org-mXparser" Version="5.0.7" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0-preview.6.22324.4" />
-      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-      <PackageReference Include="Serilog" Version="2.11.1-dev-01397" />
+      <PackageReference Include="MathParser.org-mXparser" Version="5.2.1" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+      <PackageReference Include="Serilog" Version="2.12.0" />
       <PackageReference Include="Telegram.Bot" Version="18.0.0" />
     </ItemGroup>
 
@@ -106,7 +107,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Radzinsky.Persistence\Radzinsky.Persistence.csproj" />
+      <ProjectReference Include="..\Radzinsky.Domain\Radzinsky.Domain.csproj" />
     </ItemGroup>
 
 </Project>

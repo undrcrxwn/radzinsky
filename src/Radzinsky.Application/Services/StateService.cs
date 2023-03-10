@@ -1,16 +1,16 @@
 ﻿using Newtonsoft.Json;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Abstractions.Persistence;
 using Radzinsky.Domain.Models.Entities;
-using Radzinsky.Persistence;
 using Serilog;
 
 namespace Radzinsky.Application.Services;
 
 public class StateService : IStateService
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
 
-    public StateService(ApplicationDbContext dbContext) =>
+    public StateService(IApplicationDbContext dbContext) =>
         _dbContext = dbContext;
 
     public async Task<T?> ReadStateAsync<T>(string key) where T : class
@@ -26,7 +26,7 @@ public class StateService : IStateService
         var entry = await FindEntryAsync(key);
         var serializedPayload = JsonConvert.SerializeObject(payload);
         
-        Log.Information($"Saving state: {0}", serializedPayload);
+        Log.Information("Saving state: {0}", serializedPayload);
 
         if (entry is null)
             await _dbContext.States.AddAsync(new State(key, serializedPayload));

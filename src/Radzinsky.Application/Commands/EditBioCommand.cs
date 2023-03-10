@@ -1,17 +1,17 @@
 ﻿using Mapster;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Abstractions.Persistence;
+using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Contexts;
 using Radzinsky.Domain.Models.Entities;
-using Radzinsky.Persistence;
-using Radzinsky.Persistence.Extensions;
 
 namespace Radzinsky.Application.Commands;
 
 public class EditBioCommand : ICommand
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
 
-    public EditBioCommand(ApplicationDbContext dbContext) =>
+    public EditBioCommand(IApplicationDbContext dbContext) =>
         _dbContext = dbContext;
 
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
@@ -33,7 +33,7 @@ public class EditBioCommand : ICommand
         
         sender.Bio = context.Payload;
 
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
         await context.SendTextAsync(context.Resources!.GetRandom<string>("BioChanged"));
     }
 }

@@ -1,15 +1,14 @@
 ﻿using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Abstractions.Persistence;
 using Radzinsky.Application.Models.Contexts;
-using Radzinsky.Persistence;
 
 namespace Radzinsky.Application.Commands;
 
 public class BioCommand : ICommand
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
 
-    public BioCommand(ApplicationDbContext dbContext) =>
-        _dbContext = dbContext;
+    public BioCommand(IApplicationDbContext dbContext) => _dbContext = dbContext;
     
     public async Task ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
     {

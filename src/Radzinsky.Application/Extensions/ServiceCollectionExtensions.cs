@@ -49,8 +49,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ICalculator, Calculator>()
             .AddSingleton<IHashingService, Md5HashingService>()
             .AddSingleton<IReplyMemoryService, ReplyMemoryService>()
-            .AddScoped<IPersistentAsyncService, PersistentAsyncService>()
-            .AddScoped<IAuthorizationService, AuthorizationService>()
             .AddScoped<IStateService, StateService>()
             .AddScoped<BehaviorContext>()
             .AddScoped<CommandContext>()

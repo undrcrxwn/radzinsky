@@ -1,18 +1,18 @@
 ﻿using System.Globalization;
 using System.Text;
 using Radzinsky.Application.Abstractions;
+using Radzinsky.Application.Abstractions.Persistence;
 using Radzinsky.Application.Extensions;
 using Radzinsky.Application.Models.Contexts;
-using Radzinsky.Persistence;
 
 namespace Radzinsky.Application.Commands;
 
 public class StatusCommand : ICommand
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
     private readonly IRuntimeInfoService _runtimeInfo;
 
-    public StatusCommand(ApplicationDbContext dbContext, IRuntimeInfoService runtimeInfo)
+    public StatusCommand(IApplicationDbContext dbContext, IRuntimeInfoService runtimeInfo)
     {
         _dbContext = dbContext;
         _runtimeInfo = runtimeInfo;

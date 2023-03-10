@@ -1,33 +1,15 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Radzinsky.Domain.Enumerations;
 using Radzinsky.Domain.Models.Entities;
-using Radzinsky.Persistence.Converters;
+using Radzinsky.Application.Abstractions.Persistence;
 
 namespace Radzinsky.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
-    public DbSet<User> Users { get; set; } = null!;
-    public DbSet<State> States { get; set; } = null!;
-    public DbSet<Chat> Chats { get; set; } = null!;
-    public DbSet<ChatMember> ChatMembers { get; set; } = null!;
-    public DbSet<ChatPortal> ChatPortals { get; set; } = null!;
-    public DbSet<Role> Roles { get; set; } = null!;
+    public DbSet<User> Users => Set<User>();
+    public DbSet<State> States => Set<State>();
+    public DbSet<Chat> Chats => Set<Chat>();
+    public DbSet<ChatPortal> ChatPortals => Set<ChatPortal>();
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
-    
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        builder
-            .Entity<Role>()
-            .Property(x => x.Permissions)
-            .HasConversion<ChatMemberPermissionsCollectionConverter>();
-
-        builder
-            .Entity<ChatMember>()
-            .HasKey(x => new { x.ChatId, x.UserId });
-    }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 }
