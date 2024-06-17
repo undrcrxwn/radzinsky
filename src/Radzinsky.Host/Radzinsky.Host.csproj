@@ -5,26 +5,24 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <UserSecretsId>704f6230-cdc2-44fa-abd3-c15b9213db93</UserSecretsId>
+        <UserSecretsId>2d1a56f2-30a9-4c02-875c-e74d3b572932</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.3" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
-        <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.2" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+        <PackageReference Include="Telegram.Bot" Version="19.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Radzinsky.Application\Radzinsky.Application.csproj" />
+      <ProjectReference Include="..\Radzinsky.Endpoints\Radzinsky.Endpoints.csproj" />
+      <ProjectReference Include="..\Radzinsky.Framework\Radzinsky.Framework.csproj" />
       <ProjectReference Include="..\Radzinsky.Persistence\Radzinsky.Persistence.csproj" />
     </ItemGroup>
 

@@ -1,42 +1,44 @@
-using Hangfire;
-using Hangfire.AspNetCore;
-using Radzinsky.Application.Extensions;
-using Radzinsky.Host.Services;
-using Radzinsky.Persistence.Extensions;
-using Serilog;
-using Telegram.Bot;
+using System.Globalization;
+using Radzinsky.Endpoints;
+using Radzinsky.Framework;
+using Radzinsky.Framework.Configurations;
+using Radzinsky.Host;
+using Radzinsky.Host.Transport;
+using Radzinsky.Persistence;
 
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("ru-RU");
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog();
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.AppSettings()
-    .WriteTo.Console()
-    .WriteTo.File("logs/session.log", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+builder.Services.AddHealthChecks();
+builder.Services.AddBoundConfigurations(builder.Configuration);
+builder.Services.AddFramework(options => options.ScanAssembly(typeof(Start).Assembly));
 
-builder.Services.AddHostedService<WebhookConfigurator>();
+// In Development environment, EF Core's InMemory provider is preferred over Npgsql
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddInMemoryPersistence();
+else
+    builder.Services.AddPostgresPersistence(builder.Configuration);
 
-var token = builder.Configuration["Telegram:BotApiToken"];
-builder.Services.AddHttpClient("tgwebhook")
-    .AddTypedClient<ITelegramBotClient>(client => new TelegramBotClient(token, client));
+var telegramConfiguration = new TelegramConfiguration();
+builder.Configuration.GetSection("Telegram").Bind(telegramConfiguration);
+var preferWebhookTransport = telegramConfiguration.WebhookHost is not null;
 
-builder.Services
-    .AddApplication(builder.Configuration)
-    .AddPersistence(builder.Configuration)
-    .AddControllers()
-    .AddNewtonsoftJson();
+// Use webhook instead of long polling
+if (preferWebhookTransport)
+{
+    builder.Services.AddControllers().AddNewtonsoftJson();
+    builder.Services.AddHostedService<WebhookInitializer>();
+}
+else
+{
+    builder.Services.AddHostedService<LongPollingInitializer>();
+}
 
 var app = builder.Build();
 
-app.MapControllers();
-app.UseRouting();
-app.UseCors();
+// Configure middleware pipeline
+app.UseHealthChecks("/healthz");
+if (preferWebhookTransport)
+    app.MapControllers();
 
-var factory = app.Services.GetRequiredService<IServiceScopeFactory>();
-GlobalConfiguration.Configuration.UseActivator(
-    new AspNetCoreJobActivator(factory));
-
-app.UseHangfireDashboard();
-
-app.Run();
+await app.RunAsync();

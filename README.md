@@ -12,7 +12,7 @@ That one single Telegram bot to replace all the others.
 1. Telegram update comes from Telegram through the Host's <kbd>WebhookController</kbd> or in response to a long polling request.
 1. It reaches the Framework's <kbd>UpdateHandler</kbd> and then gets challenged by the Framework's routers.
 1. Each router tries to classify the update using its discovery service and then form a <kbd>Route</kbd> based on it.
-1. When a matching endpoint is finally found, it gets called. If there is no such endpoint, <kbd>NoMatchingEndpointException</kbd> is thrown.
+1. When a matching endpoint is finally found, it gets called. If there is no such endpoint, the update is ignored.
 1. Endpoint implementation handles the update in a separate DI scope, given both the <kbd>Update</kbd> and the <kbd>Route</kbd>.
 1. If needed, route type is specified (for example, into <kbd>RegExRoute</kbd>) and routing details (such as command's alias and parameters) are obtained.
 
