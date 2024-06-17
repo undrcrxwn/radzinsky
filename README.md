@@ -20,7 +20,7 @@ That one single Telegram bot to replace all the others.
 - Be humble and prefer <kbd>dotnet run</kbd> over Docker Compose to save time.
 - Prefer using long polling over webhook. Otherwise, suffer with [ngrok](https://ngrok.com/docs/getting-started) or [localtunnel](https://loca.lt).
 - If using [ngrok](https://ngrok.com/docs/getting-started), consider [signing in via auth token](https://dashboard.ngrok.com/get-started/your-authtoken) to get unlimited lifetime for your tunnel.
-- To use long polling, just leave the <kbg>Telegram:WebhookHost</kbd> configuration null.
+- To use long polling, just leave the <kbd>Telegram:WebhookHost</kbd> configuration null.
 - Use [.NET user secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to keep your configuration safe and JSON.
 - Give this repo a star.
 
